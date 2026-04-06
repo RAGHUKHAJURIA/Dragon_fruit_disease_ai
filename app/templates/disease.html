@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Disease Advisory - Dragon Fruit AI Suite{% endblock %}
+
+{% block content %}
+<header class="app-header">
+    <h1>Disease Advisory Lab</h1>
+    <p>Upload a dragon fruit image and get disease diagnosis with Grad-CAM explainability and treatment guidance.</p>
+    <div class="badge-row">
+        <span class="badge">6-Class Detection</span>
+        <span class="badge-outline">Grad-CAM Explainability</span>
+    </div>
+</header>
+
+<div class="glass-container" style="max-width: 680px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="icon icon-upload">📤</div>
+        <h2>Upload for Disease Analysis</h2>
+    </div>
+
+    <form id="uploadForm" action="{{ url_for('predict_disease') }}" method="POST" enctype="multipart/form-data">
+        <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <span class="upload-icon">🖼️</span>
+            <p><strong>Click to browse</strong> or drag & drop an image</p>
+            <p class="hint">JPG, PNG, WebP · Max 10 MB</p>
+            <img id="preview" class="upload-preview" alt="Preview">
+        </div>
+        <input type="file" name="image" id="fileInput" accept="image/*">
+        <button type="submit" class="btn btn-primary btn-block" id="submitBtn" disabled>
+            Analyze Disease
+        </button>
+    </form>
+</div>
+
+<div style="max-width: 920px; margin: 2.2rem auto 0;">
+    <h3 style="text-align:center; color: var(--text-secondary); margin-bottom: 0.6rem;">Detectable Classes</h3>
+    <div class="disease-grid">
+        {% for name, info in diseases.items() %}
+        <div class="disease-mini-card">
+            <h4>{{ name.replace('_', ' ') }}</h4>
+            <p class="pathogen">{{ info.pathogen or 'No pathogen (healthy class)' }}</p>
+            <span class="severity-tag severity-{{ info.severity | lower | replace(' ', '') }}">{{ info.severity }}</span>
+            <ul class="cues">
+                {% for cue in info.visual_cues[:2] %}
+                <li>{{ cue }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const preview = document.getElementById('preview');
+const submitBtn = document.getElementById('submitBtn');
+const form = document.getElementById('uploadForm');
+const spinner = document.getElementById('spinner');
+
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) showPreview(fileInput.files[0]);
+});
+
+['dragenter', 'dragover'].forEach(ev => {
+    dropZone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+});
+
+['dragleave', 'drop'].forEach(ev => {
+    dropZone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+    });
+});
+
+dropZone.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length) {
+        fileInput.files = files;
+        showPreview(files[0]);
+    }
+});
+
+function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        preview.src = e.target.result;
+        preview.classList.add('visible');
+        submitBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+}
+
+form.addEventListener('submit', () => spinner.classList.add('active'));
+</script>
+{% endblock %}

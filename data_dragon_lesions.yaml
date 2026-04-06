@@ -1,0 +1,17 @@
+# ─────────────────────────────────────────────────────────────
+#  YOLOv8  |  Dragon Fruit Lesion Detection Dataset Config
+# ─────────────────────────────────────────────────────────────
+
+path: "C:/Users/prith/Desktop/My Projects/Mini_Project/Dragon-fruit Disease/mini-project/dragonfruit_disease_ai/dataset/yolo_dragon_lesions"
+
+train: images/train
+val:   images/val
+test:  images/test
+
+# Class names (5 disease categories)
+names:
+  0: Anthracnose
+  1: Stem_Canker
+  2: Soft_Rot
+  3: Brown_Stem_Spot
+  4: Gray_Blight

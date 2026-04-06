@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dragon Fruit AI Suite - Disease Diagnosis and Quality Grading">
+    <title>{% block title %}Dragon Fruit AI Suite{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<canvas id="particles-canvas"></canvas>
+
+<nav class="top-nav">
+    <div class="top-nav-inner">
+        <a class="brand" href="{{ url_for('index') }}">Dragon Fruit AI Suite</a>
+        <div class="nav-links">
+            <a href="{{ url_for('disease_page') }}" class="{% if request.endpoint in ['disease_page', 'predict_disease'] %}active{% endif %}">Disease Lab</a>
+            <a href="{{ url_for('quality_page') }}" class="{% if request.endpoint in ['quality_page', 'predict_quality'] %}active{% endif %}">Quality Grading</a>
+            <a href="{{ url_for('detect_page') }}" class="{% if request.endpoint in ['detect_page', 'predict_detect'] %}active{% endif %}">Lesion Detector</a>
+        </div>
+    </div>
+</nav>
+
+<div class="spinner-overlay" id="spinner">
+    <div class="spinner"></div>
+    <p class="spinner-text">Analyzing image with AI...</p>
+</div>
+
+<div class="page-content">
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+            <div class="flash-msg">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+        <footer class="app-footer">
+            Dragon Fruit AI Suite &copy; 2026 · Dual-Model Agricultural Intelligence Platform
+        </footer>
+    </div>
+</div>
+
+<script>
+(function() {
+    const canvas = document.getElementById('particles-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const COLORS = [
+        'rgba(0, 0, 0, 0.25)',
+        'rgba(0, 0, 0, 0.15)',
+        'rgba(0, 0, 0, 0.10)',
+        'rgba(80, 80, 80, 0.20)',
+        'rgba(160, 160, 160, 0.15)'
+    ];
+
+    class Particle {
+        constructor() { this.reset(true); }
+        reset(init) {
+            this.x = Math.random() * W;
+            this.y = init ? Math.random() * H : H + 20;
+            this.r = Math.random() * 3 + 1;
+            this.vy = -(Math.random() * 0.5 + 0.15);
+            this.vx = (Math.random() - 0.5) * 0.3;
+            this.alpha = Math.random() * 0.5 + 0.2;
+            this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            this.pulse = Math.random() * Math.PI * 2;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.pulse += 0.01;
+            this.currentR = this.r + Math.sin(this.pulse) * 0.6;
+            if (this.y < -20 || this.x < -20 || this.x > W + 20) this.reset(false);
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, Math.max(this.currentR, 0.5), 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.alpha;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+    function drawLines() {
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = 'rgba(0, 0, 0, ' + (0.06 * (1 - dist / 120)) + ')';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => { p.update(); p.draw(); });
+        drawLines();
+        requestAnimationFrame(animate);
+    }
+    animate();
+})();
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

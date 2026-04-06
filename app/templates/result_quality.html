@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Quality Result - Dragon Fruit AI Suite{% endblock %}
+
+{% block content %}
+<header class="app-header" style="padding-bottom: 1rem;">
+    <h1>Quality Grading Result</h1>
+</header>
+
+<div class="glass-container">
+    <div style="text-align:center; margin-bottom: 1rem;">
+        <span class="badge">Grade: {{ prediction }}</span>
+    </div>
+
+    <div class="quality-summary">
+        <div class="card">
+            <div class="card-header">
+                <div class="icon icon-result">🏷️</div>
+                <h2>Predicted Grade</h2>
+            </div>
+            <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.4rem;">{{ prediction }}</p>
+            <p class="conf">Confidence: <strong>{{ '%.1f'|format(confidence * 100) }}%</strong></p>
+            <p style="margin-top: 0.8rem; color: var(--text-secondary);">
+                Quality Band: <strong>{{ quality_advice.quality_band }}</strong>
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="icon icon-treatment">📦</div>
+                <h2>Market Recommendation</h2>
+            </div>
+            {% set market_class = 'market-domestic' %}
+            {% if 'Export' in quality_advice.market_recommendation %}
+                {% set market_class = 'market-export' %}
+            {% elif 'Local' in quality_advice.market_recommendation %}
+                {% set market_class = 'market-local' %}
+            {% endif %}
+            <span class="market-badge {{ market_class }}">{{ quality_advice.market_recommendation }}</span>
+            <ul class="tip-list" style="margin-top: 1rem;">
+                {% for point in quality_advice.action_points %}
+                <li>{{ point }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 1rem;">
+        <div class="card-header">
+            <div class="icon icon-upload">🖼️</div>
+            <h2>Uploaded Fruit</h2>
+        </div>
+        <div class="vision-card-large">
+            <img src="{{ img_url }}" alt="Uploaded fruit image">
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 1rem;">
+        <div class="card-header">
+            <div class="icon icon-result">📈</div>
+            <h2>Class Probabilities</h2>
+        </div>
+        <div class="prob-bar-group">
+            {% for cls, prob in probabilities | dictsort(by='value', reverse=true) %}
+            <div class="prob-item">
+                <span class="name">{{ cls }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill {{ 'top' if cls == prediction else '' }}" style="width: {{ (prob * 100) | round(1) }}%"></div>
+                </div>
+                <span class="pct">{{ '%.1f'|format(prob * 100) }}%</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 1.6rem;">
+    <a href="{{ url_for('quality_page') }}" class="btn btn-outline">Grade Another Fruit</a>
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Lesion Detection Result - Dragon Fruit AI Suite{% endblock %}
+
+{% block content %}
+<header class="app-header" style="padding-bottom: 1rem;">
+    <h1>Lesion Detection Result</h1>
+</header>
+
+<div class="glass-container">
+    <!-- Severity banner -->
+    <div style="text-align: center; margin-bottom: 1.3rem;">
+        <span class="badge">{{ total_lesions }} Lesion{{ 's' if total_lesions != 1 else '' }} Detected</span>
+    </div>
+
+    <div class="diagnosis-banner">
+        <div class="diagnosis-icon {{ 'healthy' if severity == 'None' else 'diseased' }}">
+            {{ '🌿' if severity == 'None' else '🔬' }}
+        </div>
+        <div class="diagnosis-info">
+            <h2>Severity: {{ severity }}</h2>
+            <p class="conf">
+                Total lesions: <strong>{{ total_lesions }}</strong>
+                &middot;
+                <span class="severity-tag severity-{{ severity | lower | replace(' ', '') }}">
+                    {{ severity }}
+                </span>
+            </p>
+            {% if disease_counts %}
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.3rem;">
+                Types detected:
+                {% for d, c in disease_counts.items() %}
+                    <em>{{ d.replace('_', ' ') }} ({{ c }})</em>{{ ', ' if not loop.last else '' }}
+                {% endfor %}
+            </p>
+            {% else %}
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.3rem;">
+                No disease lesions detected above confidence threshold.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Side-by-side: original vs annotated -->
+    <div class="vision-grid-large">
+        <div class="vision-card-large">
+            <h3>Original Input</h3>
+            <img src="{{ img_url }}" alt="Uploaded image">
+        </div>
+        <div class="vision-card-large">
+            <h3>YOLOv8 Annotations</h3>
+            {% if total_lesions > 0 %}
+                <img src="{{ annotated_url }}" alt="Annotated lesions">
+            {% else %}
+                <img src="{{ img_url }}" alt="No lesions">
+                <p style="text-align:center; color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">
+                    No lesions found — image looks healthy.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Per-class summary -->
+    {% if class_summary %}
+    <div class="card" style="margin-top: 1.4rem;">
+        <div class="card-header">
+            <div class="icon icon-result">📊</div>
+            <h2>Detection Breakdown</h2>
+        </div>
+        <div class="prob-bar-group">
+            {% for cls_name, data in class_summary.items() %}
+            <div class="prob-item">
+                <span class="name">{{ cls_name.replace('_', ' ') }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill top" style="width: {{ [data.avg_conf, 100] | min }}%"></div>
+                </div>
+                <span class="pct">{{ data.count }}× · avg {{ data.avg_conf }}%</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Raw detections table -->
+    {% if detections %}
+    <div class="card" style="margin-top: 1.4rem;">
+        <div class="card-header">
+            <div class="icon icon-result">📋</div>
+            <h2>All Detections ({{ total_lesions }})</h2>
+        </div>
+        <div style="overflow-x: auto;">
+            <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-muted);">
+                        <th style="padding: 0.5rem 0.8rem; text-align:left;">#</th>
+                        <th style="padding: 0.5rem 0.8rem; text-align:left;">Disease</th>
+                        <th style="padding: 0.5rem 0.8rem; text-align:right;">Confidence</th>
+                        <th style="padding: 0.5rem 0.8rem; text-align:right;">Bounding Box (x1,y1,x2,y2)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for det in detections %}
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 0.45rem 0.8rem; color: var(--text-muted);">{{ loop.index }}</td>
+                        <td style="padding: 0.45rem 0.8rem; font-weight: 600;">{{ det.class_name.replace('_', ' ') }}</td>
+                        <td style="padding: 0.45rem 0.8rem; text-align:right; color: #69db7c;">{{ '%.1f'|format(det.confidence * 100) }}%</td>
+                        <td style="padding: 0.45rem 0.8rem; text-align:right; color: var(--text-muted); font-family: monospace; font-size:0.8rem;">
+                            {{ det.bbox_xyxy | map('int') | join(', ') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Severity interpretation -->
+    <div class="advisor-box" style="margin-top: 1.4rem;">
+        <h4>Severity Guide</h4>
+        <ul class="tip-list">
+            <li><strong>None</strong> — No lesions found; fruit appears healthy.</li>
+            <li><strong>Low (1–2 lesions)</strong> — Early stage; monitor and apply preventive fungicide.</li>
+            <li><strong>Moderate (3–6 lesions)</strong> — Targeted treatment recommended; isolate affected plants.</li>
+            <li><strong>High (7–12 lesions)</strong> — Aggressive treatment required; risk of spread is high.</li>
+            <li><strong>Severe (13+ lesions)</strong> — Consider pruning heavily infected tissue; quarantine plant.</li>
+        </ul>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 1.6rem;">
+    <a href="{{ url_for('detect_page') }}" class="btn btn-outline">Detect Another Image</a>
+    &nbsp;&nbsp;
+    <a href="{{ url_for('disease_page') }}" class="btn btn-outline">Go to Disease Lab</a>
+</div>
+{% endblock %}

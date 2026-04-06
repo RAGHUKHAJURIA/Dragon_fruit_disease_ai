@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnosis Result — Dragon Fruit Disease AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Particle Background -->
+<canvas id="particles-canvas"></canvas>
+
+<div class="page-content">
+<div class="container">
+
+    <!-- Header -->
+    <header class="app-header" style="padding-bottom: 1rem;">
+        <h1>Diagnosis Result</h1>
+    </header>
+
+    <!-- Glass container -->
+    <div class="glass-container">
+
+        <!-- Diagnosis Badge -->
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <span class="badge">Diagnosis: {{ prediction.replace('_', ' ') }}</span>
+        </div>
+
+        <!-- Diagnosis Banner -->
+        <div class="diagnosis-banner">
+            <div class="diagnosis-icon {{ 'healthy' if prediction == 'Healthy' else 'diseased' }}">
+                {{ '🌿' if prediction == 'Healthy' else '🦠' }}
+            </div>
+            <div class="diagnosis-info">
+                <h2>{{ prediction.replace('_', ' ') }}</h2>
+                <p class="conf">
+                    Confidence: <strong>{{ "%.1f"|format(confidence * 100) }}%</strong>
+                    &nbsp;&middot;&nbsp;
+                    <span class="severity-tag severity-{{ advisory.severity | lower | replace(' ', '') }}">
+                        {{ advisory.severity }} Severity
+                    </span>
+                </p>
+                {% if advisory.pathogen %}
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.3rem;">
+                    Pathogen: <em>{{ advisory.pathogen }}</em>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ═══ LARGE Vision Grid: Original ↔ Grad-CAM Overlay ═══ -->
+        <div class="vision-grid-large">
+            <div class="vision-card-large">
+                <h3>📷 Original Input</h3>
+                <img src="{{ img_url }}" alt="Uploaded dragon fruit image">
+            </div>
+            <div class="vision-card-large">
+                <h3>🔬 XAI Heatmap (Grad-CAM)</h3>
+                <img src="{{ cam_url }}" alt="Grad-CAM heatmap overlay">
+            </div>
+        </div>
+
+        <!-- Class Probabilities -->
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header">
+                <div class="icon icon-result">📊</div>
+                <h2>Class Probabilities</h2>
+            </div>
+            <div class="prob-bar-group">
+                {% for cls, prob in probabilities | dictsort(by='value', reverse=true) %}
+                <div class="prob-item">
+                    <span class="name">{{ cls.replace('_', ' ') }}</span>
+                    <div class="bar-track">
+                        <div class="bar-fill {{ 'top' if cls == prediction else '' }}"
+                             style="width: {{ (prob * 100) | round(1) }}%"></div>
+                    </div>
+                    <span class="pct">{{ "%.1f"|format(prob * 100) }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Treatment Plan -->
+        <div class="advisor-box">
+            <h4>💊 Treatment Plan</h4>
+            <ol class="treatment-list">
+                {% for step in advisory.treatment_steps %}
+                <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+
+        <!-- Prevention Measures -->
+        <div class="advisor-box" style="border-left-color: #000;">
+            <h4>🛡️ Prevention Measures</h4>
+            <ul class="tip-list">
+                {% for tip in advisory.prevention_tips %}
+                <li>{{ tip }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Environmental Conditions -->
+        <div class="advisor-box" style="border-left-color: #a78bfa;">
+            <h4>🌦️ Environmental Conditions</h4>
+            <div class="env-box">{{ advisory.environmental_note }}</div>
+        </div>
+
+    </div><!-- end glass-container -->
+
+    <!-- Upload Another -->
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{{ url_for('index') }}" class="btn btn-outline">
+            ⬅ Upload Another Image
+        </a>
+    </div>
+
+    <footer class="app-footer">
+        Dragon Fruit Disease AI &copy; 2025 &middot; AI-Powered Disease Diagnosis for Dragon Fruit Cultivation
+    </footer>
+
+</div><!-- container -->
+</div><!-- page-content -->
+
+<!-- Particle Background Script -->
+<script>
+(function() {
+    const canvas = document.getElementById('particles-canvas');
+    const ctx    = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const COLORS = [
+        'rgba(0, 0, 0, 0.25)',
+        'rgba(0, 0, 0, 0.15)',
+        'rgba(0, 0, 0, 0.10)',
+        'rgba(80, 80, 80, 0.20)',
+        'rgba(160, 160, 160, 0.15)'
+    ];
+
+    const COUNT = 60;
+
+    class Particle {
+        constructor() { this.reset(true); }
+        reset(init) {
+            this.x  = Math.random() * W;
+            this.y  = init ? Math.random() * H : H + 10;
+            this.r  = Math.random() * 3 + 1;
+            this.vy = -(Math.random() * 0.6 + 0.15);
+            this.vx = (Math.random() - 0.5) * 0.4;
+            this.alpha = Math.random() * 0.6 + 0.2;
+            this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            this.pulse = Math.random() * Math.PI * 2;
+            this.pulseSpeed = Math.random() * 0.02 + 0.005;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.pulse += this.pulseSpeed;
+            this.currentR = this.r + Math.sin(this.pulse) * 0.8;
+            if (this.y < -10 || this.x < -10 || this.x > W + 10) this.reset(false);
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, Math.max(this.currentR, 0.5), 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.alpha;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    for (let i = 0; i < COUNT; i++) particles.push(new Particle());
+
+    function drawLines() {
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = 'rgba(0, 0, 0, ' + (0.06 * (1 - dist / 120)) + ')';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => { p.update(); p.draw(); });
+        drawLines();
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+})();
+</script>
+</body>
+</html>

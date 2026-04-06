@@ -1,0 +1,4 @@
+0	Defect Dragon Fruit
+1	Fresh Dragon Fruit
+2	Immature Dragon Fruit
+3	Mature Dragon Fruit

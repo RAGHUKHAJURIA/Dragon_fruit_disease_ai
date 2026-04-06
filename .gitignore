@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+
+# Local app outputs
+app/static/uploads/
+
+# Large model artifacts
+models/*.pth
+models/*training_curves*.png
+
+# Dataset contents (keep only placeholder folders)
+dataset/*
+!dataset/train/
+!dataset/train/.gitkeep
+!dataset/test/
+!dataset/test/.gitkeep
+!dataset/validation/
+!dataset/validation/.gitkeep
+
+# Notebook and OS noise
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Disease Result - Dragon Fruit AI Suite{% endblock %}
+
+{% block content %}
+<header class="app-header" style="padding-bottom: 1rem;">
+    <h1>Disease Diagnosis Result</h1>
+</header>
+
+<div class="glass-container">
+    <div style="text-align: center; margin-bottom: 1.3rem;">
+        <span class="badge">Diagnosis: {{ prediction.replace('_', ' ') }}</span>
+    </div>
+
+    <div class="diagnosis-banner">
+        <div class="diagnosis-icon {{ 'healthy' if prediction == 'Healthy' else 'diseased' }}">
+            {{ '🌿' if prediction == 'Healthy' else '🦠' }}
+        </div>
+        <div class="diagnosis-info">
+            <h2>{{ prediction.replace('_', ' ') }}</h2>
+            <p class="conf">
+                Confidence: <strong>{{ '%.1f'|format(confidence * 100) }}%</strong>
+                &middot;
+                <span class="severity-tag severity-{{ advisory.severity | lower | replace(' ', '') }}">
+                    {{ advisory.severity }} Severity
+                </span>
+            </p>
+            {% if advisory.pathogen %}
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.3rem;">Pathogen: <em>{{ advisory.pathogen }}</em></p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="vision-grid-large">
+        <div class="vision-card-large">
+            <h3>Original Input</h3>
+            <img src="{{ img_url }}" alt="Uploaded image">
+        </div>
+        <div class="vision-card-large">
+            <h3>Grad-CAM Overlay</h3>
+            <img src="{{ cam_url }}" alt="Grad-CAM result">
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 1.4rem;">
+        <div class="card-header">
+            <div class="icon icon-result">📊</div>
+            <h2>Class Probabilities</h2>
+        </div>
+        <div class="prob-bar-group">
+            {% for cls, prob in probabilities | dictsort(by='value', reverse=true) %}
+            <div class="prob-item">
+                <span class="name">{{ cls.replace('_', ' ') }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill {{ 'top' if cls == prediction else '' }}" style="width: {{ (prob * 100) | round(1) }}%"></div>
+                </div>
+                <span class="pct">{{ '%.1f'|format(prob * 100) }}%</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="advisor-box">
+        <h4>Treatment Plan</h4>
+        <ol class="treatment-list">
+            {% for step in advisory.treatment_steps %}
+            <li>{{ step }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+
+    <div class="advisor-box" style="border-left-color: #000;">
+        <h4>Prevention Measures</h4>
+        <ul class="tip-list">
+            {% for tip in advisory.prevention_tips %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="advisor-box" style="border-left-color: #a78bfa;">
+        <h4>Environmental Conditions</h4>
+        <div class="env-box">{{ advisory.environmental_note }}</div>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 1.6rem;">
+    <a href="{{ url_for('disease_page') }}" class="btn btn-outline">Analyze Another Disease Image</a>
+</div>
+{% endblock %}

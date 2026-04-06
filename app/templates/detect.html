@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Lesion Detector - Dragon Fruit AI Suite{% endblock %}
+
+{% block content %}
+<header class="app-header">
+    <h1>YOLOv8 Lesion Detector</h1>
+    <p>Upload a dragon fruit image to locate and count individual disease lesions with bounding-box annotations.</p>
+    <div class="badge-row">
+        <span class="badge">Object Detection</span>
+        <span class="badge-outline">YOLOv8 · 5 Lesion Types</span>
+        <span class="badge-outline">Severity Scoring</span>
+    </div>
+</header>
+
+<div class="glass-container" style="max-width: 680px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="icon icon-upload">🔍</div>
+        <h2>Upload for Lesion Detection</h2>
+    </div>
+
+    <form id="uploadForm" action="{{ url_for('predict_detect') }}" method="POST" enctype="multipart/form-data">
+        <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <span class="upload-icon">🖼️</span>
+            <p><strong>Click to browse</strong> or drag &amp; drop an image</p>
+            <p class="hint">JPG, PNG, WebP · Max 10 MB</p>
+            <img id="preview" class="upload-preview" alt="Preview">
+        </div>
+        <input type="file" name="image" id="fileInput" accept="image/*">
+        <button type="submit" class="btn btn-primary btn-block" id="submitBtn" disabled>
+            🔍 Detect Lesions
+        </button>
+    </form>
+</div>
+
+<!-- Detectable lesion classes reference -->
+<div style="max-width: 960px; margin: 2.2rem auto 0;">
+    <h3 style="text-align:center; color: var(--text-secondary); margin-bottom: 0.6rem;">Detectable Lesion Classes</h3>
+    <div class="disease-grid">
+        {% set class_meta = {
+            'Anthracnose':    {'icon': '🟢', 'desc': 'Fungal lesions — brown/black sunken spots on fruit surface'},
+            'Stem_Canker':    {'icon': '🟠', 'desc': 'Orange-brown cankers on stems; weakens vascular tissue'},
+            'Soft_Rot':       {'icon': '🔴', 'desc': 'Water-soaked, soft decay — post-harvest threat'},
+            'Brown_Stem_Spot':{'icon': '🔵', 'desc': 'Brown spots along stem; bacterial or fungal origin'},
+            'Gray_Blight':    {'icon': '🟣', 'desc': 'Gray-white powdery lesions; aggressive in high humidity'},
+        } %}
+        {% for cls_id, cls_name in yolo_classes.items() %}
+        {% set meta = class_meta.get(cls_name, {'icon': '⚪', 'desc': ''}) %}
+        <div class="disease-mini-card">
+            <h4>{{ meta.icon }} {{ cls_name.replace('_', ' ') }}</h4>
+            <p class="pathogen">{{ meta.desc }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div style="max-width: 680px; margin: 1.5rem auto 0; padding: 1rem 1.4rem;
+     background: rgba(255,255,255,0.04); border-radius: 12px;
+     border: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); font-size: 0.85rem;">
+    <strong>ℹ️ How it works:</strong> The YOLOv8 model draws bounding boxes around every lesion it detects,
+    counts them by type, and estimates overall infection severity (None → Low → Moderate → High → Severe).
+    Model: <code>yolo_dragon_best.pt</code> · Confidence threshold: <code>0.35</code>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const dropZone  = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const preview   = document.getElementById('preview');
+const submitBtn = document.getElementById('submitBtn');
+const form      = document.getElementById('uploadForm');
+const spinner   = document.getElementById('spinner');
+
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) showPreview(fileInput.files[0]);
+});
+
+['dragenter', 'dragover'].forEach(ev => {
+    dropZone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+});
+['dragleave', 'drop'].forEach(ev => {
+    dropZone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+    });
+});
+dropZone.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length) { fileInput.files = files; showPreview(files[0]); }
+});
+
+function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        preview.src = e.target.result;
+        preview.classList.add('visible');
+        submitBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+}
+
+form.addEventListener('submit', () => spinner.classList.add('active'));
+</script>
+{% endblock %}

@@ -1,0 +1,674 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Dragon Fruit Disease AI — Black & White Theme
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Variables ─────────────────────────────────────────────────────── */
+:root {
+    --red:           #111111;
+    --red-light:     #333333;
+    --red-dim:       rgba(0, 0, 0, 0.06);
+    --red-glow:      rgba(0, 0, 0, 0.15);
+    --green:         #222222;
+    --green-light:   #444444;
+    --green-dim:     rgba(0, 0, 0, 0.06);
+    --green-glow:    rgba(0, 0, 0, 0.15);
+    --bg-dark:       #ffffff;
+    --bg-surface:    #f7f7f7;
+    --card-bg:       rgba(255, 255, 255, 0.85);
+    --card-bg-solid: #ffffff;
+    --border:        #000000;
+    --border-glow:   rgba(0, 0, 0, 0.35);
+    --text-primary:  #111111;
+    --text-secondary:#555555;
+    --text-muted:    #888888;
+    --warning:       #333333;
+    --danger:        #111111;
+    --danger-glow:   rgba(0, 0, 0, 0.08);
+    --gradient-main: linear-gradient(135deg, #111 0%, #444 100%);
+    --gradient-btn:  linear-gradient(135deg, #111 0%, #333 100%);
+    --gradient-bar:  linear-gradient(90deg, #444, #111);
+    --shadow:        0 4px 20px -4px rgba(0, 0, 0, 0.10);
+    --shadow-glow:   0 0 16px rgba(0, 0, 0, 0.08);
+    --radius:        24px;
+    --radius-sm:     16px;
+    --radius-xs:     8px;
+    --transition:    all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+/* ── Particle Canvas ───────────────────────────────────────────────── */
+#particles-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.page-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Container ─────────────────────────────────────────────────────── */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+.glass-container {
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+/* ── App Header ────────────────────────────────────────────────────── */
+.app-header {
+    text-align: center;
+    padding: 2.5rem 1rem 1.5rem;
+}
+
+.app-header h1 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #111;
+    margin-bottom: 0.6rem;
+}
+
+.app-header p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+/* ── Badge Row ─────────────────────────────────────────────────────── */
+.badge-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 1.2rem;
+    border-radius: 99px;
+    background: #111;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: none;
+}
+
+.badge-outline {
+    background: transparent;
+    color: #333;
+    border: 1px solid #000;
+    text-shadow: none;
+    text-transform: none;
+}
+
+/* ── Card ──────────────────────────────────────────────────────────── */
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.card:hover {
+    border-color: var(--border-glow);
+    box-shadow: var(--shadow), var(--shadow-glow);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h2 { font-size: 1.3rem; font-weight: 700; }
+
+.card-header .icon {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px; font-size: 1.2rem;
+}
+
+.card-header .icon-upload    { background: rgba(0,0,0,0.06); }
+.card-header .icon-result    { background: rgba(0,0,0,0.06); }
+.card-header .icon-heatmap   { background: rgba(0,0,0,0.06); }
+.card-header .icon-treatment { background: rgba(0,0,0,0.06); }
+.card-header .icon-prevention{ background: rgba(0,0,0,0.06); }
+.card-header .icon-environment{ background: rgba(0,0,0,0.06); }
+.card-header .icon-literature{ background: rgba(0,0,0,0.06); }
+
+/* ── Upload Area ───────────────────────────────────────────────────── */
+.upload-area {
+    border: 2px dashed rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-sm);
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.upload-area:hover,
+.upload-area.drag-over {
+    border-color: #000;
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.upload-area .upload-icon {
+    font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.8;
+}
+
+.upload-area p { color: var(--text-secondary); margin-bottom: 0.5rem; }
+.upload-area .hint { font-size: 0.8rem; color: var(--text-muted); }
+
+.upload-preview {
+    max-width: 100%; max-height: 280px;
+    border-radius: var(--radius-sm);
+    margin: 1rem auto 0; display: none; object-fit: contain;
+}
+
+.upload-preview.visible { display: block; }
+input[type="file"] { display: none; }
+
+/* ── Buttons ───────────────────────────────────────────────────────── */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.5rem; padding: 0.85rem 2rem; border-radius: var(--radius-xs);
+    font-size: 1rem; font-weight: 700; font-family: inherit;
+    cursor: pointer; border: none; transition: var(--transition);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #111;
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+.btn-outline {
+    background: transparent;
+    color: #111;
+    border: 1px solid #000;
+}
+
+.btn-outline:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+.btn-block { width: 100%; margin-top: 1.5rem; }
+
+/* ── Diagnosis Banner ──────────────────────────────────────────────── */
+.diagnosis-banner {
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem; display: flex; align-items: center; gap: 1.5rem;
+    box-shadow: var(--shadow); margin-bottom: 1.5rem;
+}
+
+.diagnosis-icon {
+    width: 64px; height: 64px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; flex-shrink: 0;
+}
+
+.diagnosis-icon.healthy  { background: rgba(0,0,0,0.06); }
+.diagnosis-icon.diseased { background: rgba(0,0,0,0.06); }
+
+.diagnosis-info h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.25rem; }
+.diagnosis-info .conf { color: var(--text-secondary); font-size: 1rem; }
+.diagnosis-info .conf strong { color: #111; font-size: 1.2rem; }
+
+/* ── Severity Tags ─────────────────────────────────────────────────── */
+.severity-tag {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.3rem 0.9rem; border-radius: 999px;
+    font-size: 0.85rem; font-weight: 700;
+}
+
+.severity-none     { background: rgba(0,0,0,0.06); color: #555; }
+.severity-low      { background: rgba(0,0,0,0.06); color: #555; }
+.severity-moderate { background: rgba(0,0,0,0.10); color: #333; }
+.severity-high     { background: rgba(0,0,0,0.14); color: #111; }
+.severity-veryhigh { background: rgba(0,0,0,0.18); color: #000; }
+
+/* ── Vision Grid ───────────────────────────────────────────────────── */
+.vision-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem; margin: 1.5rem 0;
+}
+
+.vision-card { text-align: center; }
+
+.vision-card h3 {
+    font-size: 1rem; font-weight: 600;
+    color: var(--text-secondary); margin-bottom: 0.75rem;
+}
+
+.vision-card img {
+    width: 100%; border-radius: var(--radius-sm);
+    border: 2px solid #000;
+    transition: transform 0.3s ease;
+}
+
+.vision-card img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
+}
+
+/* ── LARGE Vision Grid — Maximized Heatmap Display ─────────────────── */
+.vision-grid-large {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.vision-card-large {
+    text-align: center;
+}
+
+.vision-card-large h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.vision-card-large img {
+    width: 100%;
+    max-height: 450px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    border: 2px solid #000;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 8px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vision-card-large img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 768px) {
+    .vision-grid-large { grid-template-columns: 1fr; }
+}
+
+/* ── Result Layout ─────────────────────────────────────────────────── */
+.result-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.5rem; margin-top: 1.5rem;
+}
+
+.result-grid .full-width { grid-column: 1 / -1; }
+
+/* ── Probability Bars ──────────────────────────────────────────────── */
+.prob-bar-group { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.prob-item { display: flex; align-items: center; gap: 0.75rem; }
+
+.prob-item .name {
+    width: 130px; font-size: 0.85rem; font-weight: 500;
+    color: var(--text-secondary); text-align: right; flex-shrink: 0;
+}
+
+.prob-item .bar-track {
+    flex: 1; height: 22px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 6px; overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.12);
+}
+
+.prob-item .bar-fill {
+    height: 100%; border-radius: 6px;
+    background: #333;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 2px;
+}
+
+.prob-item .bar-fill.top {
+    background: #111;
+    box-shadow: none;
+}
+
+.prob-item .pct {
+    width: 50px; font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
+}
+
+/* ── Advisor Box ───────────────────────────────────────────────────── */
+.advisor-box {
+    background: rgba(0, 0, 0, 0.03);
+    padding: 1.5rem;
+    border-left: 4px solid #000;
+    border-radius: var(--radius-xs);
+    margin-top: 1rem;
+}
+
+.advisor-box h4 {
+    font-size: 1.05rem; font-weight: 700;
+    color: var(--text-primary); margin-bottom: 0.75rem;
+}
+
+.advisor-box p, .advisor-box li {
+    color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;
+}
+
+/* ── Treatment List ────────────────────────────────────────────────── */
+.treatment-list { list-style: none; counter-reset: step; }
+
+.treatment-list li {
+    counter-increment: step;
+    padding: 0.85rem 1rem 0.85rem 3.2rem;
+    position: relative;
+    border-left: 2px solid var(--border);
+    margin-left: 1rem;
+    color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;
+}
+
+.treatment-list li::before {
+    content: counter(step);
+    position: absolute; left: -14px; top: 0.75rem;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #111; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+    border: 2px solid #fff;
+}
+
+.treatment-list li:last-child { border-left-color: transparent; }
+
+/* ── Prevention / Tip List ─────────────────────────────────────────── */
+.tip-list { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+
+.tip-list li {
+    padding: 0.65rem 1rem;
+    background: rgba(0,0,0,0.02);
+    border-radius: var(--radius-xs);
+    border-left: 3px solid #000;
+    color: var(--text-secondary); font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.tip-list li:hover {
+    background: rgba(0,0,0,0.05);
+    border-left-color: #333;
+}
+
+/* ── Literature ────────────────────────────────────────────────────── */
+.lit-list { list-style: none; }
+
+.lit-list li {
+    padding: 0.5rem 0; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;
+}
+
+.lit-list li::before { content: '📄 '; }
+.lit-list li:last-child { border-bottom: none; }
+
+/* ── Environmental Box ─────────────────────────────────────────────── */
+.env-box {
+    padding: 1.2rem 1.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: var(--radius-xs);
+    border: 1px solid #000;
+    color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;
+}
+
+/* ── Disease Cards (index page) ────────────────────────────────────── */
+.disease-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem; margin-top: 1.5rem;
+}
+
+.disease-mini-card {
+    background: var(--card-bg-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem; transition: var(--transition);
+}
+
+.disease-mini-card:hover {
+    border-color: var(--border-glow);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow);
+}
+
+.disease-mini-card h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+
+.disease-mini-card .pathogen {
+    font-size: 0.8rem; font-style: italic;
+    color: var(--text-muted); margin-bottom: 0.5rem;
+}
+
+.disease-mini-card .cues {
+    list-style: none; font-size: 0.82rem; color: var(--text-secondary);
+}
+
+.disease-mini-card .cues li::before { content: '• '; color: #111; }
+
+/* ── Flash Messages ────────────────────────────────────────────────── */
+.flash-msg {
+    padding: 1rem 1.5rem; border-radius: var(--radius-xs);
+    margin-bottom: 1rem; font-weight: 500;
+    background: rgba(0,0,0,0.05); color: #111;
+    border: 1px solid #000;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────── */
+.app-footer {
+    text-align: center; padding: 2rem 1rem;
+    color: var(--text-muted); font-size: 0.82rem;
+    border-top: 1px solid var(--border); margin-top: 3rem;
+}
+
+/* ── Top Navigation ────────────────────────────────────────────────── */
+.top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.85);
+    border-bottom: 2px solid #000;
+}
+
+.top-nav-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0.9rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.brand {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: var(--transition);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #111;
+    border-color: #000;
+    background: rgba(0, 0, 0, 0.06);
+}
+
+/* ── Home Mode Selection ───────────────────────────────────────────── */
+.mode-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 1.2rem;
+    margin-top: 1.2rem;
+}
+
+.mode-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    text-decoration: none;
+    color: inherit;
+    padding: 1.4rem;
+    border-radius: var(--radius-sm);
+    border: 2px solid #000;
+    background: #fff;
+    transition: var(--transition);
+}
+
+.mode-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-glow);
+    box-shadow: var(--shadow-glow);
+}
+
+.mode-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.mode-subtext {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+}
+
+/* ── Quality Result UI ─────────────────────────────────────────────── */
+.market-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.market-export {
+    background: rgba(0, 0, 0, 0.06);
+    border: 1px solid #000;
+    color: #111;
+}
+
+.market-local {
+    background: rgba(0, 0, 0, 0.06);
+    border: 1px solid #000;
+    color: #111;
+}
+
+.market-domestic {
+    background: rgba(0, 0, 0, 0.06);
+    border: 1px solid #000;
+    color: #111;
+}
+
+.quality-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.4rem 0;
+}
+
+.quality-summary .card {
+    margin: 0;
+}
+
+/* ── Spinner ───────────────────────────────────────────────────────── */
+.spinner-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(255,255,255,0.92); z-index: 1000;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 1.5rem;
+}
+
+.spinner-overlay.active { display: flex; }
+
+.spinner {
+    width: 56px; height: 56px;
+    border: 4px solid rgba(0,0,0,0.15);
+    border-top-color: #111;
+    border-right-color: #333;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner-text { color: var(--text-secondary); font-size: 1.1rem; font-weight: 500; }
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .app-header h1 { font-size: 2rem; }
+    .result-grid   { grid-template-columns: 1fr; }
+    .vision-grid   { grid-template-columns: 1fr; }
+    .diagnosis-banner { flex-direction: column; text-align: center; }
+    .container { padding: 1rem; }
+    .glass-container { padding: 1.5rem; }
+    .mode-grid { grid-template-columns: 1fr; }
+    .quality-summary { grid-template-columns: 1fr; }
+    .top-nav-inner { flex-direction: column; align-items: flex-start; }
+}

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Quality Grading - Dragon Fruit AI Suite{% endblock %}
+
+{% block content %}
+<header class="app-header">
+    <h1>Quality Grading Studio</h1>
+    <p>Grade fruit market quality based on shape, color richness, and texture features using a dedicated quality model.</p>
+    <div class="badge-row">
+        <span class="badge">ResNet50 Quality Model</span>
+        <span class="badge-outline">Market Value Recommendation</span>
+    </div>
+</header>
+
+<div class="glass-container" style="max-width: 680px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="icon icon-upload">📷</div>
+        <h2>Upload for Quality Grading</h2>
+    </div>
+
+    <form id="uploadForm" action="{{ url_for('predict_quality') }}" method="POST" enctype="multipart/form-data">
+        <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <span class="upload-icon">🍈</span>
+            <p><strong>Click to browse</strong> or drag & drop an image</p>
+            <p class="hint">JPG, PNG, WebP · Max 10 MB</p>
+            <img id="preview" class="upload-preview" alt="Preview">
+        </div>
+        <input type="file" name="image" id="fileInput" accept="image/*">
+        <button type="submit" class="btn btn-primary btn-block" id="submitBtn" disabled>
+            Grade Quality
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const preview = document.getElementById('preview');
+const submitBtn = document.getElementById('submitBtn');
+const form = document.getElementById('uploadForm');
+const spinner = document.getElementById('spinner');
+
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) showPreview(fileInput.files[0]);
+});
+
+['dragenter', 'dragover'].forEach(ev => {
+    dropZone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+});
+
+['dragleave', 'drop'].forEach(ev => {
+    dropZone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+    });
+});
+
+dropZone.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length) {
+        fileInput.files = files;
+        showPreview(files[0]);
+    }
+});
+
+function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        preview.src = e.target.result;
+        preview.classList.add('visible');
+        submitBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+}
+
+form.addEventListener('submit', () => spinner.classList.add('active'));
+</script>
+{% endblock %}
