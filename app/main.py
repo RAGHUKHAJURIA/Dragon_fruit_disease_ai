@@ -6,16 +6,21 @@ Routes:
     GET  /disease          → Disease diagnosis page (Grad-CAM)
     GET  /quality          → Quality grading page
     GET  /detect           → YOLOv8 lesion detector page
+    GET  /camera           → Live Camera guided field scanner
     POST /predict_disease  → Disease inference + advisory
     POST /predict_quality  → Quality inference + market recommendation
     POST /predict_detect   → YOLOv8 lesion detection + annotated image
+    POST /api/analyze      → JSON API for camera-captured images
 """
 
 import os
 import sys
 import uuid
 
-from flask import Flask, render_template, request, redirect, url_for, flash
+import base64
+import io
+
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from PIL import Image
 import torch
 import torch.nn as nn
@@ -68,6 +73,14 @@ ALLOWED_EXT = {"jpg", "jpeg", "png", "webp", "bmp"}
 # ── Flask app ─────────────────────────────────────────────────────────────────
 app = Flask(__name__)
 app.secret_key = "dragonfruit-secret-key"
+
+# ── Serve custom icons from project-root icons/ folder ────────────────────────
+ICONS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icons")
+
+@app.route("/icons/<path:filename>")
+def serve_icon(filename):
+    from flask import send_from_directory
+    return send_from_directory(ICONS_DIR, filename)
 
 # ── Lazy-loaded models ───────────────────────────────────────────────────────
 _disease_model = None
@@ -158,6 +171,12 @@ def quality_page():
     return render_template("quality.html")
 
 
+@app.route("/camera")
+def camera_page():
+    """Live camera guided field scanner."""
+    return render_template("camera.html")
+
+
 @app.route("/predict_disease", methods=["POST"])
 def predict_disease():
     """Accept uploaded image → inference → Grad-CAM → advisor → results."""
@@ -210,7 +229,8 @@ def predict_disease():
     probs = result["probabilities"]
 
     return render_template(
-        "result_disease.html",
+        "treatment.html",
+        mode          = "disease",
         img_url       = url_for("static", filename=f"uploads/{img_name}"),
         cam_url       = url_for("static", filename=f"uploads/{overlay_name}"),
         prediction    = result["predicted_class"],
@@ -333,16 +353,215 @@ def predict_detect():
         data["max_conf"] = round(max(data["confs"]) * 100, 1)
         del data["confs"]
 
+    # Determine dominant disease for treatment advice
+    dominant_disease = None
+    if result["disease_counts"]:
+        dominant_disease = max(result["disease_counts"], key=result["disease_counts"].get)
+
+    # Get treatment advisory for the dominant detected disease
+    detect_advisory = None
+    detect_confidence = 0.0
+    if dominant_disease and dominant_disease in DISEASE_KNOWLEDGE:
+        # Compute average confidence for the dominant class
+        dom_confs = [d["confidence"] for d in result["detections"] if d["class_name"] == dominant_disease]
+        detect_confidence = sum(dom_confs) / len(dom_confs) if dom_confs else 0.5
+        detect_advisory = generate_recommendation(
+            predicted_class=dominant_disease,
+            confidence=detect_confidence,
+        )
+
     return render_template(
-        "result_detect.html",
+        "treatment.html",
+        mode           = "detect",
         img_url        = url_for("static", filename=f"uploads/{img_name}"),
         annotated_url  = url_for("static", filename=f"uploads/{annotated_name}"),
+        prediction     = dominant_disease if dominant_disease else "Healthy",
+        confidence     = detect_confidence if detect_confidence else 1.0,
         total_lesions  = result["total_lesions"],
         severity       = result["severity"],
         disease_counts = result["disease_counts"],
         class_summary  = class_summary,
         detections     = result["detections"],
+        advisory       = detect_advisory,
     )
+
+
+# ── JSON API for camera-captured images ───────────────────────────────────────
+@app.route("/api/analyze", methods=["POST"])
+def api_analyze():
+    """Accept base64 image from camera → inference → return JSON with redirect."""
+    try:
+        data = request.get_json(force=True)
+        mode      = data.get("mode", "disease")
+        image_b64 = data.get("image", "")
+
+        if not image_b64:
+            return jsonify({"success": False, "error": "No image data received"}), 400
+
+        # Strip data URL prefix if present
+        if "," in image_b64:
+            image_b64 = image_b64.split(",", 1)[1]
+
+        # Decode base64 → PIL Image
+        img_bytes = base64.b64decode(image_b64)
+        pil_img   = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+
+        # Save to uploads
+        img_name = f"cam_{uuid.uuid4().hex[:12]}.jpg"
+        img_path = os.path.join(UPLOAD_DIR, img_name)
+        pil_img.save(img_path, quality=95)
+
+        if mode == "disease":
+            # ── Disease analysis (same as predict_disease) ────────
+            model = _get_disease_model()
+            target_layer = _get_target_layer()
+            result = run_gradcam(
+                model        = model,
+                img_path     = img_path,
+                target_layer = target_layer,
+                class_names  = DISEASE_CLASS_NAMES,
+                transform    = infer_transforms(IMG_SIZE),
+                device       = "cpu",
+            )
+
+            overlay_name = f"cam_overlay_{uuid.uuid4().hex[:8]}.jpg"
+            overlay_path = os.path.join(UPLOAD_DIR, overlay_name)
+            from PIL import Image as PILImage
+            import numpy as np
+            overlay_img = PILImage.fromarray(result["overlay"])
+            overlay_img.save(overlay_path, quality=95)
+
+            advisory = generate_recommendation(
+                predicted_class=result["predicted_class"],
+                confidence=result["confidence"],
+            )
+
+            probs = result["probabilities"]
+
+            # Store result in session-like temp and redirect
+            # Instead, we render via a special URL with query params
+            return jsonify({
+                "success":      True,
+                "redirect_url": url_for(
+                    "camera_result",
+                    mode="disease",
+                    img=img_name,
+                    overlay=overlay_name,
+                ),
+            })
+
+        elif mode == "detect":
+            # ── YOLO detection (same as predict_detect) ──────────
+            detector = _get_yolo_detector()
+            result   = detector.predict(img_path)
+
+            annotated_name = f"cam_annot_{uuid.uuid4().hex[:8]}.jpg"
+            annotated_path = os.path.join(UPLOAD_DIR, annotated_name)
+            from PIL import Image as PILImage
+            PILImage.fromarray(result["annotated_image"]).save(annotated_path, quality=95)
+
+            return jsonify({
+                "success":      True,
+                "redirect_url": url_for(
+                    "camera_result",
+                    mode="detect",
+                    img=img_name,
+                    annotated=annotated_name,
+                ),
+            })
+        else:
+            return jsonify({"success": False, "error": f"Unknown mode: {mode}"}), 400
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/camera_result")
+def camera_result():
+    """Render treatment page from camera-captured analysis."""
+    mode      = request.args.get("mode", "disease")
+    img_name  = request.args.get("img", "")
+    img_path  = os.path.join(UPLOAD_DIR, img_name)
+
+    if mode == "disease":
+        overlay_name = request.args.get("overlay", "")
+
+        model = _get_disease_model()
+        target_layer = _get_target_layer()
+        result = run_gradcam(
+            model=model, img_path=img_path,
+            target_layer=target_layer,
+            class_names=DISEASE_CLASS_NAMES,
+            transform=infer_transforms(IMG_SIZE),
+            device="cpu",
+        )
+
+        advisory = generate_recommendation(
+            predicted_class=result["predicted_class"],
+            confidence=result["confidence"],
+        )
+
+        return render_template(
+            "treatment.html",
+            mode="disease",
+            img_url=url_for("static", filename=f"uploads/{img_name}"),
+            cam_url=url_for("static", filename=f"uploads/{overlay_name}"),
+            prediction=result["predicted_class"],
+            confidence=result["confidence"],
+            probabilities=result["probabilities"],
+            advisory=advisory,
+        )
+
+    elif mode == "detect":
+        annotated_name = request.args.get("annotated", "")
+
+        detector = _get_yolo_detector()
+        result   = detector.predict(img_path)
+
+        class_summary = {}
+        for det in result["detections"]:
+            cn = det["class_name"]
+            if cn not in class_summary:
+                class_summary[cn] = {"count": 0, "confs": []}
+            class_summary[cn]["count"] += 1
+            class_summary[cn]["confs"].append(det["confidence"])
+        for cn, data in class_summary.items():
+            data["avg_conf"] = round(sum(data["confs"]) / len(data["confs"]) * 100, 1)
+            data["max_conf"] = round(max(data["confs"]) * 100, 1)
+            del data["confs"]
+
+        dominant_disease = None
+        if result["disease_counts"]:
+            dominant_disease = max(result["disease_counts"], key=result["disease_counts"].get)
+
+        detect_advisory  = None
+        detect_confidence = 0.0
+        if dominant_disease and dominant_disease in DISEASE_KNOWLEDGE:
+            dom_confs = [d["confidence"] for d in result["detections"] if d["class_name"] == dominant_disease]
+            detect_confidence = sum(dom_confs) / len(dom_confs) if dom_confs else 0.5
+            detect_advisory = generate_recommendation(
+                predicted_class=dominant_disease,
+                confidence=detect_confidence,
+            )
+
+        return render_template(
+            "treatment.html",
+            mode="detect",
+            img_url=url_for("static", filename=f"uploads/{img_name}"),
+            annotated_url=url_for("static", filename=f"uploads/{annotated_name}"),
+            prediction=dominant_disease if dominant_disease else "Healthy",
+            confidence=detect_confidence if detect_confidence else 1.0,
+            total_lesions=result["total_lesions"],
+            severity=result["severity"],
+            disease_counts=result["disease_counts"],
+            class_summary=class_summary,
+            detections=result["detections"],
+            advisory=detect_advisory,
+        )
+
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":

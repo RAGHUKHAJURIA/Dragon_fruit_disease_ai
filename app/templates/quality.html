@@ -13,13 +13,13 @@
 
 <div class="glass-container" style="max-width: 680px; margin: 0 auto;">
     <div class="card-header">
-        <div class="icon icon-upload">📷</div>
+        <div class="icon icon-upload"><img src="/icons/vector-isolated-one-single-dragonfruit-600nw-2444120803.webp" alt="" class="rx-icon-img"></div>
         <h2>Upload for Quality Grading</h2>
     </div>
 
     <form id="uploadForm" action="{{ url_for('predict_quality') }}" method="POST" enctype="multipart/form-data">
         <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
-            <span class="upload-icon">🍈</span>
+            <span class="upload-icon"><img src="/icons/563d0201e4359c2e890569e254ea14790eb370b71d08b6de5052511cc0352313.jpg" alt="" class="rx-icon-img-xl"></span>
             <p><strong>Click to browse</strong> or drag & drop an image</p>
             <p class="hint">JPG, PNG, WebP · Max 10 MB</p>
             <img id="preview" class="upload-preview" alt="Preview">

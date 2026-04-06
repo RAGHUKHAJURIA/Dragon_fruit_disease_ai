@@ -14,20 +14,20 @@
 
 <div class="glass-container" style="max-width: 680px; margin: 0 auto;">
     <div class="card-header">
-        <div class="icon icon-upload">🔍</div>
+        <div class="icon icon-upload"><img src="/icons/1730090.png" alt="" class="rx-icon-img"></div>
         <h2>Upload for Lesion Detection</h2>
     </div>
 
     <form id="uploadForm" action="{{ url_for('predict_detect') }}" method="POST" enctype="multipart/form-data">
         <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
-            <span class="upload-icon">🖼️</span>
+            <span class="upload-icon"><img src="/icons/563d0201e4359c2e890569e254ea14790eb370b71d08b6de5052511cc0352313.jpg" alt="" class="rx-icon-img-xl"></span>
             <p><strong>Click to browse</strong> or drag &amp; drop an image</p>
             <p class="hint">JPG, PNG, WebP · Max 10 MB</p>
             <img id="preview" class="upload-preview" alt="Preview">
         </div>
         <input type="file" name="image" id="fileInput" accept="image/*">
         <button type="submit" class="btn btn-primary btn-block" id="submitBtn" disabled>
-            🔍 Detect Lesions
+            <i data-lucide="search" style="width:16px;height:16px;"></i> Detect Lesions
         </button>
     </form>
 </div>
@@ -37,16 +37,16 @@
     <h3 style="text-align:center; color: var(--text-secondary); margin-bottom: 0.6rem;">Detectable Lesion Classes</h3>
     <div class="disease-grid">
         {% set class_meta = {
-            'Anthracnose':    {'icon': '🟢', 'desc': 'Fungal lesions — brown/black sunken spots on fruit surface'},
-            'Stem_Canker':    {'icon': '🟠', 'desc': 'Orange-brown cankers on stems; weakens vascular tissue'},
-            'Soft_Rot':       {'icon': '🔴', 'desc': 'Water-soaked, soft decay — post-harvest threat'},
-            'Brown_Stem_Spot':{'icon': '🔵', 'desc': 'Brown spots along stem; bacterial or fungal origin'},
-            'Gray_Blight':    {'icon': '🟣', 'desc': 'Gray-white powdery lesions; aggressive in high humidity'},
+            'Anthracnose':    {'color': '#2e7d32', 'desc': 'Fungal lesions — brown/black sunken spots on fruit surface'},
+            'Stem_Canker':    {'color': '#ef6c00', 'desc': 'Orange-brown cankers on stems; weakens vascular tissue'},
+            'Soft_Rot':       {'color': '#c62828', 'desc': 'Water-soaked, soft decay — post-harvest threat'},
+            'Brown_Stem_Spot':{'color': '#1565c0', 'desc': 'Brown spots along stem; bacterial or fungal origin'},
+            'Gray_Blight':    {'color': '#6a1b9a', 'desc': 'Gray-white powdery lesions; aggressive in high humidity'},
         } %}
         {% for cls_id, cls_name in yolo_classes.items() %}
-        {% set meta = class_meta.get(cls_name, {'icon': '⚪', 'desc': ''}) %}
+        {% set meta = class_meta.get(cls_name, {'color': '#888', 'desc': ''}) %}
         <div class="disease-mini-card">
-            <h4>{{ meta.icon }} {{ cls_name.replace('_', ' ') }}</h4>
+            <h4><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:{{ meta.color }};margin-right:6px;vertical-align:middle;"></span>{{ cls_name.replace('_', ' ') }}</h4>
             <p class="pathogen">{{ meta.desc }}</p>
         </div>
         {% endfor %}
@@ -56,7 +56,7 @@
 <div style="max-width: 680px; margin: 1.5rem auto 0; padding: 1rem 1.4rem;
      background: rgba(255,255,255,0.04); border-radius: 12px;
      border: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); font-size: 0.85rem;">
-    <strong>ℹ️ How it works:</strong> The YOLOv8 model draws bounding boxes around every lesion it detects,
+    <strong><i data-lucide="info" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> How it works:</strong> The YOLOv8 model draws bounding boxes around every lesion it detects,
     counts them by type, and estimates overall infection severity (None → Low → Moderate → High → Severe).
     Model: <code>yolo_dragon_best.pt</code> · Confidence threshold: <code>0.35</code>
 </div>

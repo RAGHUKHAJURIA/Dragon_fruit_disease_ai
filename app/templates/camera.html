@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% block title %}Live Scanner — Dragon Fruit AI Suite{% endblock %}
+
+{% block content %}
+<div class="camera-page">
+
+    <!-- Header -->
+    <div class="camera-header">
+        <a href="{{ url_for('index') }}" class="camera-back-btn">
+            <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back
+        </a>
+        <h2>
+            <i data-lucide="scan-line" style="width:22px;height:22px;"></i>
+            Live Field Scanner
+        </h2>
+        <div style="width: 70px;"></div>
+    </div>
+
+    <!-- Video Viewport -->
+    <div class="camera-viewport" id="cameraViewport">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+        <canvas id="cameraCanvas" style="display:none;"></canvas>
+
+        <!-- HUD Overlay -->
+        <div class="camera-hud">
+            <div class="camera-focus-ring" id="focusRing"></div>
+        </div>
+
+        <!-- Flash Button -->
+        <button class="camera-flash-btn" id="flashBtn" onclick="toggleFlash()" title="Toggle Flash">
+            <i data-lucide="zap" style="width:20px;height:20px;"></i>
+        </button>
+
+        <!-- Preview Overlay (after capture) -->
+        <div class="camera-preview-overlay" id="previewOverlay">
+            <img id="previewImage" alt="Captured preview">
+            <div class="camera-preview-actions">
+                <button class="btn btn-outline" onclick="retakePhoto()" style="color:#fff;border-color:rgba(255,255,255,0.4);">
+                    <i data-lucide="rotate-ccw" style="width:16px;height:16px;"></i> Retake
+                </button>
+                <button class="btn btn-primary" onclick="analyzePhoto()">
+                    <i data-lucide="microscope" style="width:16px;height:16px;"></i> Analyze
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="camera-loading" id="loadingOverlay">
+            <div class="spinner"></div>
+            <span>Analyzing with AI...</span>
+        </div>
+
+        <!-- No Camera Fallback -->
+        <div id="noCameraMsg" style="display:none; position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; color:rgba(255,255,255,0.6); gap:0.8rem;">
+            <i data-lucide="camera-off" style="width:48px;height:48px;"></i>
+            <span>Camera not available</span>
+            <span style="font-size:0.8rem;">Please grant camera permission or use a device with a camera</span>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="camera-status-bar" id="statusBar">
+        <span class="status-dot"></span>
+        <span id="statusText">Initializing camera...</span>
+    </div>
+
+    <!-- Blur / Detail Score Bars -->
+    <div class="camera-scores">
+        <div class="score-item">
+            <span>Sharpness</span>
+            <div class="score-bar">
+                <div class="score-fill" id="blurScore" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="score-item">
+            <span>Detail</span>
+            <div class="score-bar">
+                <div class="score-fill" id="detailScore" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mode Toggle: Disease vs Detect -->
+    <div class="camera-mode-toggle">
+        <input type="radio" name="analysisMode" id="modeDisease" value="disease" checked>
+        <label for="modeDisease">
+            <img src="/icons/1730090.png" alt="" class="rx-icon-img-sm" style="opacity:0.7;"> Disease Lab
+        </label>
+        <input type="radio" name="analysisMode" id="modeDetect" value="detect">
+        <label for="modeDetect">
+            <i data-lucide="crosshair" style="width:14px;height:14px;"></i> Lesion Detector
+        </label>
+    </div>
+
+    <!-- Capture Button -->
+    <div class="camera-controls">
+        <button class="camera-capture-btn" id="captureBtn" onclick="captureFrame()" disabled title="Capture Photo"></button>
+    </div>
+
+    <!-- Auto-snap -->
+    <div class="camera-autosnap">
+        <input type="checkbox" id="autoSnap">
+        <label for="autoSnap">Auto-capture when image is sharp</label>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   LIVE CAMERA — Guided Field Scanner Engine
+   ═══════════════════════════════════════════════════════════════════ */
+
+const video      = document.getElementById('cameraVideo');
+const canvas     = document.getElementById('cameraCanvas');
+const ctx        = canvas.getContext('2d', { willReadFrequently: true });
+const focusRing  = document.getElementById('focusRing');
+const statusBar  = document.getElementById('statusBar');
+const statusText = document.getElementById('statusText');
+const captureBtn = document.getElementById('captureBtn');
+const flashBtn   = document.getElementById('flashBtn');
+const previewOvl = document.getElementById('previewOverlay');
+const previewImg = document.getElementById('previewImage');
+const loadingOvl = document.getElementById('loadingOverlay');
+const noCamMsg   = document.getElementById('noCameraMsg');
+const blurBar    = document.getElementById('blurScore');
+const detailBar  = document.getElementById('detailScore');
+
+let stream       = null;
+let flashOn      = false;
+let capturedData = null;
+let analysisLoop = null;
+let autoSnapReady = 0;
+
+// ── Thresholds ───────────────────────────────────────────────────
+const BLUR_THRESHOLD   = 35;   // Laplacian variance; higher = sharper
+const DETAIL_THRESHOLD = 8;    // Edge density %; higher = more detail
+const AUTOSNAP_FRAMES  = 6;    // ~3 seconds of stable focus
+
+// ── 1. Initialize Camera ─────────────────────────────────────────
+async function initCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: { ideal: 'environment' },
+                width:  { ideal: 1280 },
+                height: { ideal: 960 },
+            },
+            audio: false,
+        });
+        video.srcObject = stream;
+        video.addEventListener('loadedmetadata', () => {
+            canvas.width  = 160;  // Downscaled for performance
+            canvas.height = 120;
+            captureBtn.disabled = false;
+            setStatus('ready', 'Camera ready — point at the plant');
+            startAnalysisLoop();
+        });
+    } catch (err) {
+        console.error('Camera error:', err);
+        noCamMsg.style.display = 'flex';
+        setStatus('too-far', 'Camera not available');
+    }
+}
+
+// ── 2. Real-time Analysis Loop ───────────────────────────────────
+function startAnalysisLoop() {
+    analysisLoop = setInterval(() => {
+        if (previewOvl.classList.contains('active')) return;
+        if (loadingOvl.classList.contains('active')) return;
+
+        ctx.drawImage(video, 0, 0, 160, 120);
+        const imageData = ctx.getImageData(0, 0, 160, 120);
+        const gray = toGrayscale(imageData);
+
+        const blur   = computeBlurScore(gray, 160, 120);
+        const detail = computeDetailScore(gray, 160, 120);
+
+        updateScoreBars(blur, detail);
+        updateFocusRing(blur, detail);
+        checkAutoSnap(blur, detail);
+    }, 500);
+}
+
+// ── 3. Grayscale Conversion ──────────────────────────────────────
+function toGrayscale(imageData) {
+    const d = imageData.data;
+    const w = imageData.width, h = imageData.height;
+    const gray = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+        const idx = i * 4;
+        gray[i] = 0.299 * d[idx] + 0.587 * d[idx+1] + 0.114 * d[idx+2];
+    }
+    return gray;
+}
+
+// ── 4. Blur Detection (Laplacian Variance) ───────────────────────
+function computeBlurScore(gray, w, h) {
+    let sum = 0, sumSq = 0, count = 0;
+    for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+            const lap = -4 * gray[y * w + x]
+                + gray[(y-1) * w + x]
+                + gray[(y+1) * w + x]
+                + gray[y * w + (x-1)]
+                + gray[y * w + (x+1)];
+            sum += lap;
+            sumSq += lap * lap;
+            count++;
+        }
+    }
+    const mean = sum / count;
+    return (sumSq / count) - (mean * mean);
+}
+
+// ── 5. Detail / Edge Density ─────────────────────────────────────
+function computeDetailScore(gray, w, h) {
+    let edgeCount = 0;
+    const threshold = 30;
+    for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+            const gx = -gray[y * w + (x-1)] + gray[y * w + (x+1)];
+            const gy = -gray[(y-1) * w + x] + gray[(y+1) * w + x];
+            if (Math.sqrt(gx*gx + gy*gy) > threshold) edgeCount++;
+        }
+    }
+    return (edgeCount / ((w-2) * (h-2))) * 100;
+}
+
+// ── 6. Update Score Bars ─────────────────────────────────────────
+function updateScoreBars(blur, detail) {
+    const blurPct   = Math.min(100, (blur / 80) * 100);
+    const detailPct = Math.min(100, (detail / 20) * 100);
+
+    blurBar.style.width = blurPct + '%';
+    blurBar.className   = 'score-fill ' + (blurPct > 50 ? 'good' : blurPct > 25 ? 'warn' : 'poor');
+
+    detailBar.style.width = detailPct + '%';
+    detailBar.className   = 'score-fill ' + (detailPct > 50 ? 'good' : detailPct > 25 ? 'warn' : 'poor');
+}
+
+// ── 7. Update Focus Ring & Status ────────────────────────────────
+function updateFocusRing(blur, detail) {
+    if (blur >= BLUR_THRESHOLD && detail >= DETAIL_THRESHOLD) {
+        focusRing.className = 'camera-focus-ring ready';
+        setStatus('ready', 'Ready to capture — hold steady');
+        captureBtn.disabled = false;
+    } else if (blur < BLUR_THRESHOLD) {
+        focusRing.className = 'camera-focus-ring blurry';
+        setStatus('blurry', 'Hold steady — image is blurry');
+        captureBtn.disabled = false;  // Allow anyway, just warn
+    } else {
+        focusRing.className = 'camera-focus-ring too-far';
+        setStatus('too-far', 'Move closer to the lesion');
+        captureBtn.disabled = false;
+    }
+}
+
+function setStatus(state, text) {
+    statusBar.className = 'camera-status-bar ' + state;
+    statusText.textContent = text;
+}
+
+// ── 8. Auto-Snap ─────────────────────────────────────────────────
+function checkAutoSnap(blur, detail) {
+    if (!document.getElementById('autoSnap').checked) {
+        autoSnapReady = 0;
+        return;
+    }
+    if (blur >= BLUR_THRESHOLD && detail >= DETAIL_THRESHOLD) {
+        autoSnapReady++;
+        if (autoSnapReady >= AUTOSNAP_FRAMES) {
+            autoSnapReady = 0;
+            captureFrame();
+        }
+    } else {
+        autoSnapReady = 0;
+    }
+}
+
+// ── 9. Capture Frame ─────────────────────────────────────────────
+function captureFrame() {
+    // Full resolution capture
+    const fullCanvas = document.createElement('canvas');
+    fullCanvas.width  = video.videoWidth;
+    fullCanvas.height = video.videoHeight;
+    fullCanvas.getContext('2d').drawImage(video, 0, 0);
+
+    capturedData = fullCanvas.toDataURL('image/jpeg', 0.92);
+
+    // Show preview
+    previewImg.src = capturedData;
+    previewOvl.classList.add('active');
+}
+
+function retakePhoto() {
+    capturedData = null;
+    previewOvl.classList.remove('active');
+}
+
+// ── 10. Analyze Photo ────────────────────────────────────────────
+async function analyzePhoto() {
+    if (!capturedData) return;
+
+    previewOvl.classList.remove('active');
+    loadingOvl.classList.add('active');
+    setStatus('loading', 'Analyzing with AI...');
+
+    const mode = document.querySelector('input[name="analysisMode"]:checked').value;
+
+    try {
+        const resp = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mode:  mode,
+                image: capturedData,
+            }),
+        });
+
+        const data = await resp.json();
+
+        if (data.success && data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else {
+            loadingOvl.classList.remove('active');
+            setStatus('too-far', data.error || 'Analysis failed');
+            setTimeout(() => retakePhoto(), 2000);
+        }
+    } catch (err) {
+        console.error('Analysis error:', err);
+        loadingOvl.classList.remove('active');
+        setStatus('too-far', 'Network error — please try again');
+        setTimeout(() => retakePhoto(), 2000);
+    }
+}
+
+// ── 11. Flash / Torch Toggle ─────────────────────────────────────
+async function toggleFlash() {
+    if (!stream) return;
+    const track = stream.getVideoTracks()[0];
+    const caps  = track.getCapabilities ? track.getCapabilities() : {};
+
+    if (!caps.torch) {
+        setStatus('blurry', 'Flash not supported on this device');
+        setTimeout(() => setStatus('ready', 'Camera ready'), 2000);
+        return;
+    }
+
+    flashOn = !flashOn;
+    try {
+        await track.applyConstraints({ advanced: [{ torch: flashOn }] });
+        flashBtn.classList.toggle('active', flashOn);
+    } catch (e) {
+        console.warn('Torch error:', e);
+    }
+}
+
+// ── 12. Cleanup on page unload ───────────────────────────────────
+window.addEventListener('beforeunload', () => {
+    if (analysisLoop) clearInterval(analysisLoop);
+    if (stream) stream.getTracks().forEach(t => t.stop());
+});
+
+// ── Initialize ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    initCamera();
+});
+</script>
+{% endblock %}

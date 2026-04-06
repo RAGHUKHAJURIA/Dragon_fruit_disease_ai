@@ -450,7 +450,7 @@ input[type="file"] { display: none; }
     color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;
 }
 
-.lit-list li::before { content: '📄 '; }
+.lit-list li::before { content: '— '; }
 .lit-list li:last-child { border-bottom: none; }
 
 /* ── Environmental Box ─────────────────────────────────────────────── */
@@ -563,7 +563,7 @@ input[type="file"] { display: none; }
 /* ── Home Mode Selection ───────────────────────────────────────────── */
 .mode-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.2rem;
     margin-top: 1.2rem;
 }
@@ -660,6 +660,48 @@ input[type="file"] { display: none; }
 
 .spinner-text { color: var(--text-secondary); font-size: 1.1rem; font-weight: 500; }
 
+/* ── Custom Icon Images ────────────────────────────────────────────── */
+.brand-icon {
+    width: 28px; height: 28px;
+    vertical-align: middle;
+    margin-right: 8px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.nav-icon {
+    width: 18px; height: 18px;
+    vertical-align: middle;
+    margin-right: 4px;
+    object-fit: contain;
+}
+
+.rx-icon-img {
+    width: 22px; height: 22px;
+    vertical-align: middle;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.rx-icon-img-sm {
+    width: 18px; height: 18px;
+    vertical-align: middle;
+    object-fit: contain;
+}
+
+.rx-icon-img-lg {
+    width: 32px; height: 32px;
+    vertical-align: middle;
+    object-fit: contain;
+}
+
+.rx-icon-img-xl {
+    width: 48px; height: 48px;
+    vertical-align: middle;
+    object-fit: contain;
+    opacity: 0.7;
+}
+
 /* ── Responsive ────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .app-header h1 { font-size: 2rem; }
@@ -671,4 +713,1044 @@ input[type="file"] { display: none; }
     .mode-grid { grid-template-columns: 1fr; }
     .quality-summary { grid-template-columns: 1fr; }
     .top-nav-inner { flex-direction: column; align-items: flex-start; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TREATMENT PAGE — Digital Prescription UI
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Prescription Header ──────────────────────────────────────────── */
+.rx-header {
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem 2.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.8rem;
+    position: relative;
+    overflow: hidden;
+    animation: rxSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes rxSlideIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.rx-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--gradient-main);
+}
+
+.rx-header-icon {
+    width: 72px; height: 72px;
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.06);
+    border: 2px solid rgba(0,0,0,0.12);
+}
+
+.rx-header-icon.healthy  { background: rgba(34,139,34,0.08); border-color: rgba(34,139,34,0.2); }
+.rx-header-icon.diseased { background: rgba(200,0,0,0.06); border-color: rgba(200,0,0,0.15); }
+
+.rx-header-body { flex: 1; }
+
+.rx-header-body h1 {
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.3rem;
+}
+
+.rx-header-body .rx-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.rx-header-body .rx-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.rx-confidence {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #111;
+}
+
+.rx-divider {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.rx-pathogen {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ── Severity Badge (colored) ─────────────────────────────────────── */
+.rx-severity {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rx-severity-none     { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+.rx-severity-low      { background: #fff8e1; color: #f9a825; border: 1px solid #ffe082; }
+.rx-severity-moderate { background: #fff3e0; color: #ef6c00; border: 1px solid #ffcc80; }
+.rx-severity-high     { background: #fbe9e7; color: #c62828; border: 1px solid #ef9a9a; }
+.rx-severity-veryhigh { background: #fce4ec; color: #b71c1c; border: 1px solid #e57373; }
+.rx-severity-severe   { background: #f3e5f5; color: #6a1b9a; border: 1px solid #ce93d8; }
+
+/* ── Section Titles ───────────────────────────────────────────────── */
+.rx-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    margin-top: 1.8rem;
+}
+
+.rx-section-title .rx-section-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    background: rgba(0,0,0,0.06);
+}
+
+/* ── Visual Evidence Grid ─────────────────────────────────────────── */
+.rx-evidence-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    margin: 1.2rem 0;
+    animation: rxSlideIn 0.7s 0.1s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.rx-evidence-card {
+    background: var(--card-bg-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.rx-evidence-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow);
+}
+
+.rx-evidence-card img {
+    width: 100%;
+    max-height: 380px;
+    object-fit: contain;
+    background: rgba(0,0,0,0.02);
+    padding: 6px;
+}
+
+.rx-evidence-label {
+    padding: 0.7rem 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-top: 1px solid rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* ── Quick Fix Banner ─────────────────────────────────────────────── */
+.rx-quick-fix {
+    background: linear-gradient(135deg, #111 0%, #333 100%);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    padding: 1.4rem 1.8rem;
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    animation: rxSlideIn 0.7s 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.rx-quick-fix-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.rx-quick-fix-body h3 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+}
+
+.rx-quick-fix-body p {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* ── Step Cards ───────────────────────────────────────────────────── */
+.rx-steps-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    animation: rxSlideIn 0.7s 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.rx-step-card {
+    background: var(--card-bg-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.1rem 1.3rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: var(--transition);
+}
+
+.rx-step-card:hover {
+    border-color: var(--border-glow);
+    transform: translateX(4px);
+    box-shadow: var(--shadow-glow);
+}
+
+.rx-step-num {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: #111;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.rx-step-text {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    padding-top: 0.2rem;
+}
+
+/* ── Prevention Cards ─────────────────────────────────────────────── */
+.rx-prevention-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.8rem;
+    animation: rxSlideIn 0.7s 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.rx-prevention-card {
+    background: var(--card-bg-solid);
+    border: 1px solid var(--border);
+    border-left: 4px solid #111;
+    border-radius: var(--radius-xs);
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    transition: var(--transition);
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.rx-prevention-card:hover {
+    background: rgba(0,0,0,0.03);
+    border-left-color: #444;
+    transform: translateX(3px);
+}
+
+.rx-prevention-icon {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+/* ── Environment Card ─────────────────────────────────────────────── */
+.rx-env-card {
+    background: var(--card-bg-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.4rem 1.6rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    animation: rxSlideIn 0.7s 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.rx-env-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.rx-env-text {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* ── Accordion ────────────────────────────────────────────────────── */
+.rx-accordion {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-top: 0.5rem;
+    animation: rxSlideIn 0.7s 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.rx-accordion-header {
+    width: 100%;
+    background: var(--card-bg-solid);
+    border: none;
+    padding: 1rem 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.rx-accordion-header:hover {
+    background: rgba(0,0,0,0.03);
+}
+
+.rx-accordion-arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.rx-accordion.open .rx-accordion-arrow {
+    transform: rotate(180deg);
+}
+
+.rx-accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(0,0,0,0.01);
+}
+
+.rx-accordion.open .rx-accordion-body {
+    max-height: 600px;
+}
+
+.rx-accordion-inner {
+    padding: 0.8rem 1.3rem 1.3rem;
+}
+
+.rx-lit-item {
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    color: var(--text-secondary);
+    font-size: 0.87rem;
+    line-height: 1.5;
+}
+
+.rx-lit-item:last-child { border-bottom: none; }
+.rx-lit-item::before { content: '— '; }
+
+/* ── Detection Breakdown (YOLO) ──────────────────────────────────── */
+.rx-detection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.rx-detection-stat {
+    background: var(--card-bg-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.2rem;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.rx-detection-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+}
+
+.rx-detection-stat .stat-count {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111;
+    line-height: 1;
+}
+
+.rx-detection-stat .stat-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+}
+
+.rx-detection-stat .stat-conf {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+}
+
+/* ── Probability Bars (inline in treatment) ──────────────────────── */
+.rx-probs-container {
+    background: var(--card-bg-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.4rem 1.6rem;
+    margin-top: 0.5rem;
+}
+
+/* ── Action Footer ────────────────────────────────────────────────── */
+.rx-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    animation: rxSlideIn 0.7s 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── FAB Chat Button ──────────────────────────────────────────────── */
+.fab-chat {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 50;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #111, #333);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    transition: var(--transition);
+    animation: fabPulse 2s infinite;
+}
+
+.fab-chat:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+
+@keyframes fabPulse {
+    0%, 100% { box-shadow: 0 6px 24px rgba(0,0,0,0.25); }
+    50%      { box-shadow: 0 6px 24px rgba(0,0,0,0.25), 0 0 0 8px rgba(0,0,0,0.06); }
+}
+
+.fab-chat .fab-badge {
+    position: absolute;
+    top: -2px; right: -2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #c62828;
+    border: 2px solid #fff;
+    font-size: 0;
+}
+
+/* ── Chat Panel ───────────────────────────────────────────────────── */
+.chat-panel {
+    position: fixed;
+    bottom: 100px;
+    right: 28px;
+    z-index: 49;
+    width: 370px;
+    max-height: 520px;
+    background: #fff;
+    border: 2px solid #111;
+    border-radius: var(--radius);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-panel.open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.chat-panel-header {
+    padding: 1rem 1.3rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-panel-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.chat-panel-close {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.2rem;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+.chat-panel-close:hover {
+    background: rgba(0,0,0,0.06);
+    color: #111;
+}
+
+.chat-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    min-height: 280px;
+}
+
+.chat-bubble {
+    max-width: 85%;
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    animation: bubbleIn 0.3s ease both;
+}
+
+@keyframes bubbleIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.chat-bubble.bot {
+    background: rgba(0,0,0,0.06);
+    color: #111;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-bubble.user {
+    background: #111;
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-panel-input {
+    padding: 0.8rem 1.3rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chat-panel-input input {
+    flex: 1;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 999px;
+    padding: 0.6rem 1rem;
+    font-size: 0.88rem;
+    font-family: inherit;
+    outline: none;
+    transition: var(--transition);
+}
+
+.chat-panel-input input:focus {
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+}
+
+.chat-panel-input button {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: #111;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.chat-panel-input button:hover {
+    background: #333;
+}
+
+/* ── Treatment Page — Mobile Responsive ───────────────────────────── */
+@media (max-width: 768px) {
+    .rx-header {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        padding: 1.5rem;
+    }
+    .rx-header-body .rx-meta {
+        justify-content: center;
+    }
+    .rx-evidence-grid {
+        grid-template-columns: 1fr;
+    }
+    .rx-quick-fix {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.2rem;
+    }
+    .rx-prevention-grid {
+        grid-template-columns: 1fr;
+    }
+    .rx-detection-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .rx-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    .chat-panel {
+        right: 12px;
+        left: 12px;
+        width: auto;
+        bottom: 96px;
+        max-height: 60vh;
+    }
+    .fab-chat {
+        bottom: 20px;
+        right: 20px;
+        width: 54px; height: 54px;
+        font-size: 1.4rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIVE CAMERA — Guided Field Scanner UI
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Camera Page Layout ──────────────────────────────────────────── */
+.camera-page {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.camera-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 0;
+    margin-bottom: 0.8rem;
+}
+
+.camera-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.camera-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    transition: var(--transition);
+}
+
+.camera-back-btn:hover {
+    border-color: #000;
+    background: rgba(0,0,0,0.04);
+}
+
+/* ── Video Viewport ──────────────────────────────────────────────── */
+.camera-viewport {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #111;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 2px solid #000;
+    box-shadow: var(--shadow);
+}
+
+.camera-viewport video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.camera-viewport.no-camera {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.95rem;
+}
+
+/* ── HUD Overlay ─────────────────────────────────────────────────── */
+.camera-hud {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-focus-ring {
+    width: 180px;
+    height: 180px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transition: all 0.4s ease;
+    box-shadow: 0 0 0 4px rgba(0,0,0,0.15);
+}
+
+.camera-focus-ring.ready {
+    border-color: #4caf50;
+    box-shadow: 0 0 20px rgba(76,175,80,0.4), 0 0 0 4px rgba(76,175,80,0.15);
+    animation: focusPulse 2s ease-in-out infinite;
+}
+
+.camera-focus-ring.blurry {
+    border-color: #ff9800;
+    box-shadow: 0 0 16px rgba(255,152,0,0.3);
+}
+
+.camera-focus-ring.too-far {
+    border-color: #f44336;
+    box-shadow: 0 0 16px rgba(244,67,54,0.3);
+}
+
+@keyframes focusPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.04); opacity: 0.85; }
+}
+
+/* ── Flash Button ────────────────────────────────────────────────── */
+.camera-flash-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    pointer-events: all;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    z-index: 5;
+}
+
+.camera-flash-btn:hover { background: rgba(0,0,0,0.7); }
+.camera-flash-btn.active {
+    background: #f9a825;
+    color: #111;
+    border-color: #f9a825;
+}
+
+/* ── Status Bar ──────────────────────────────────────────────────── */
+.camera-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.2rem;
+    margin-top: 0.8rem;
+    border-radius: var(--radius-xs);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.camera-status-bar .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #999;
+    flex-shrink: 0;
+    transition: background 0.3s ease;
+}
+
+.camera-status-bar.ready     .status-dot { background: #4caf50; }
+.camera-status-bar.blurry    .status-dot { background: #ff9800; }
+.camera-status-bar.too-far   .status-dot { background: #f44336; }
+.camera-status-bar.loading   .status-dot { background: #2196f3; animation: statusPulse 0.8s ease infinite; }
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+}
+
+/* ── Mode Toggle ─────────────────────────────────────────────────── */
+.camera-mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-top: 0.8rem;
+    border-radius: 999px;
+    border: 2px solid #000;
+    overflow: hidden;
+    background: #fff;
+}
+
+.camera-mode-toggle label {
+    flex: 1;
+    text-align: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-secondary);
+    position: relative;
+}
+
+.camera-mode-toggle input[type="radio"] {
+    display: none;
+}
+
+.camera-mode-toggle input[type="radio"]:checked + label {
+    background: #111;
+    color: #fff;
+}
+
+/* ── Capture Button ──────────────────────────────────────────────── */
+.camera-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.camera-capture-btn {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    border: 4px solid #111;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-capture-btn::after {
+    content: '';
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: #111;
+    transition: var(--transition);
+}
+
+.camera-capture-btn:hover::after {
+    background: #333;
+    transform: scale(0.92);
+}
+
+.camera-capture-btn:active::after {
+    transform: scale(0.8);
+}
+
+.camera-capture-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.camera-capture-btn:disabled::after {
+    background: #999;
+}
+
+/* ── Auto-snap checkbox ──────────────────────────────────────────── */
+.camera-autosnap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.camera-autosnap input[type="checkbox"] {
+    accent-color: #111;
+    width: 16px; height: 16px;
+}
+
+/* ── Preview Overlay ─────────────────────────────────────────────── */
+.camera-preview-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 10;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.camera-preview-overlay.active {
+    display: flex;
+}
+
+.camera-preview-overlay img {
+    max-width: 90%;
+    max-height: 60%;
+    border-radius: var(--radius-sm);
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+.camera-preview-actions {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.camera-preview-actions .btn {
+    min-width: 120px;
+    text-align: center;
+}
+
+/* ── Camera Loading ──────────────────────────────────────────────── */
+.camera-loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 15;
+    border-radius: var(--radius);
+    color: #fff;
+}
+
+.camera-loading.active {
+    display: flex;
+}
+
+.camera-loading .spinner {
+    border-color: rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-right-color: rgba(255,255,255,0.6);
+}
+
+/* ── Blur/Detail Score Bars ──────────────────────────────────────── */
+.camera-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+}
+
+.score-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.score-item .score-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.score-item .score-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #111;
+    transition: width 0.3s ease, background 0.3s ease;
+}
+
+.score-fill.good  { background: #4caf50; }
+.score-fill.warn  { background: #ff9800; }
+.score-fill.poor  { background: #f44336; }
+
+/* ── Camera Mobile Responsive ────────────────────────────────────── */
+@media (max-width: 768px) {
+    .camera-viewport {
+        border-radius: var(--radius-sm);
+        aspect-ratio: 3 / 4;
+    }
+    .camera-focus-ring {
+        width: 140px; height: 140px;
+    }
+    .camera-capture-btn {
+        width: 64px; height: 64px;
+    }
+    .camera-capture-btn::after {
+        width: 46px; height: 46px;
+    }
 }

@@ -13,7 +13,11 @@ app/static/uploads/
 
 # Large model artifacts
 models/*.pth
+models/*.pt
 models/*training_curves*.png
+
+# YOLO training runs
+runs/
 
 # Dataset contents (keep only placeholder folders)
 dataset/*
@@ -28,3 +32,6 @@ dataset/*
 .ipynb_checkpoints/
 .DS_Store
 Thumbs.db
+
+# IDE / Gemini
+.gemini/

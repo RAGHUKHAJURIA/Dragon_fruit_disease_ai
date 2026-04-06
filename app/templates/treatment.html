@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% block title %}Digital Prescription — Dragon Fruit AI Suite{% endblock %}
+
+{% block content %}
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIGITAL PRESCRIPTION — Farmer-First Treatment Page
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 1. At-a-Glance Prescription Header ─────────────────────────── -->
+<div class="rx-header" id="rxHeader">
+    <div class="rx-header-icon {{ 'healthy' if prediction == 'Healthy' else 'diseased' }}">
+        {% if prediction == 'Healthy' %}
+            <img src="/icons/8645362.png" alt="Healthy" class="rx-icon-img-lg">
+        {% else %}
+            <img src="/icons/1730090.png" alt="Analysis" class="rx-icon-img-lg">
+        {% endif %}
+    </div>
+    <div class="rx-header-body">
+        <h1>{{ prediction.replace('_', ' ') }} Detected</h1>
+
+        {% if advisory and advisory.pathogen %}
+        <p class="rx-subtitle">Caused by <em>{{ advisory.pathogen }}</em></p>
+        {% elif advisory and prediction == 'Healthy' %}
+        <p class="rx-subtitle">No pathogen detected — plant appears healthy</p>
+        {% endif %}
+
+        <div class="rx-meta">
+            <span class="rx-confidence">{{ '%.1f'|format(confidence * 100) }}% Confidence</span>
+            <span class="rx-divider">&middot;</span>
+
+            {% if advisory %}
+                {% set sev_key = advisory.severity | lower | replace(' ', '') %}
+            {% elif severity %}
+                {% set sev_key = severity | lower | replace(' ', '') %}
+            {% else %}
+                {% set sev_key = 'none' %}
+            {% endif %}
+
+            <span class="rx-severity rx-severity-{{ sev_key }}">
+                {% if advisory %}{{ advisory.severity }}{% elif severity %}{{ severity }}{% else %}N/A{% endif %} Severity
+            </span>
+
+            {% if mode == 'detect' and total_lesions is defined %}
+            <span class="rx-divider">&middot;</span>
+            <span style="font-weight:600;">{{ total_lesions }} Lesion{{ 's' if total_lesions != 1 else '' }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ── 2. Visual Evidence ─────────────────────────────────────────── -->
+<div class="rx-section-title">
+    <span class="rx-section-icon"><img src="/icons/1730090.png" alt="" class="rx-icon-img"></span>
+    Visual Evidence — Why the AI Flagged This
+</div>
+<div class="rx-evidence-grid">
+    <div class="rx-evidence-card">
+        <img src="{{ img_url }}" alt="Original uploaded image" id="rxOriginalImg">
+        <div class="rx-evidence-label"><img src="/icons/563d0201e4359c2e890569e254ea14790eb370b71d08b6de5052511cc0352313.jpg" alt="" class="rx-icon-img-sm"> Original Input</div>
+    </div>
+    <div class="rx-evidence-card">
+        {% if mode == 'disease' %}
+            <img src="{{ cam_url }}" alt="Grad-CAM heatmap overlay" id="rxOverlayImg">
+            <div class="rx-evidence-label"><i data-lucide="flame" style="width:16px;height:16px;"></i> Grad-CAM Heatmap — Infected regions highlighted</div>
+        {% elif mode == 'detect' %}
+            {% if total_lesions > 0 %}
+                <img src="{{ annotated_url }}" alt="YOLOv8 annotated lesions" id="rxOverlayImg">
+                <div class="rx-evidence-label"><i data-lucide="crosshair" style="width:16px;height:16px;"></i> YOLOv8 Annotations — {{ total_lesions }} lesion{{ 's' if total_lesions != 1 else '' }} located</div>
+            {% else %}
+                <img src="{{ img_url }}" alt="No lesions found" id="rxOverlayImg">
+                <div class="rx-evidence-label"><i data-lucide="check-circle" style="width:16px;height:16px;"></i> No lesions found — fruit appears healthy</div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- ── 3. YOLO Detection Breakdown (only for detect mode) ─────────── -->
+{% if mode == 'detect' and class_summary %}
+<div class="rx-section-title">
+    <span class="rx-section-icon"><i data-lucide="bar-chart-2" style="width:20px;height:20px;"></i></span>
+    Detection Breakdown
+</div>
+<div class="rx-detection-grid">
+    {% for cls_name, data in class_summary.items() %}
+    <div class="rx-detection-stat">
+        <div class="stat-count">{{ data.count }}</div>
+        <div class="stat-label">{{ cls_name.replace('_', ' ') }}</div>
+        <div class="stat-conf">avg {{ data.avg_conf }}% &middot; max {{ data.max_conf }}%</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── 4. Class Probabilities (only for disease mode) ─────────────── -->
+{% if mode == 'disease' and probabilities %}
+<div class="rx-section-title">
+    <span class="rx-section-icon"><i data-lucide="bar-chart-2" style="width:20px;height:20px;"></i></span>
+    Class Probabilities
+</div>
+<div class="rx-probs-container">
+    <div class="prob-bar-group">
+        {% for cls, prob in probabilities | dictsort(by='value', reverse=true) %}
+        <div class="prob-item">
+            <span class="name">{{ cls.replace('_', ' ') }}</span>
+            <div class="bar-track">
+                <div class="bar-fill {{ 'top' if cls == prediction else '' }}" style="width: {{ (prob * 100) | round(1) }}%"></div>
+            </div>
+            <span class="pct">{{ '%.1f'|format(prob * 100) }}%</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── 5. Quick Fix Banner ────────────────────────────────────────── -->
+{% if advisory and advisory.treatment_steps %}
+<div class="rx-quick-fix" id="rxQuickFix">
+    <div class="rx-quick-fix-icon"><i data-lucide="zap" style="width:28px;height:28px;"></i></div>
+    <div class="rx-quick-fix-body">
+        <h3>Immediate Action Required</h3>
+        <p>{{ advisory.treatment_steps[0] }}</p>
+    </div>
+</div>
+{% elif prediction == 'Healthy' %}
+<div class="rx-quick-fix" id="rxQuickFix" style="background: linear-gradient(135deg, #2e7d32, #4caf50);">
+    <div class="rx-quick-fix-icon"><i data-lucide="check-circle" style="width:28px;height:28px;"></i></div>
+    <div class="rx-quick-fix-body">
+        <h3>All Clear</h3>
+        <p>No treatment required. Continue routine monitoring every 7–14 days.</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── 6. Step-by-Step Treatment Instructions ─────────────────────── -->
+{% if advisory and advisory.treatment_steps|length > 1 %}
+<div class="rx-section-title">
+    <span class="rx-section-icon"><i data-lucide="pill" style="width:20px;height:20px;"></i></span>
+    Step-by-Step Treatment Plan
+</div>
+<div class="rx-steps-grid">
+    {% for step in advisory.treatment_steps %}
+    <div class="rx-step-card">
+        <div class="rx-step-num">{{ loop.index }}</div>
+        <div class="rx-step-text">{{ step }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── 7. Prevention Measures ─────────────────────────────────────── -->
+{% if advisory and advisory.prevention_tips %}
+<div class="rx-section-title">
+    <span class="rx-section-icon"><i data-lucide="shield" style="width:20px;height:20px;"></i></span>
+    Prevention Measures
+</div>
+<div class="rx-prevention-grid">
+    {% set prevention_icons = ['sprout', 'droplets', 'scissors', 'search', 'flask-conical', 'thermometer', 'clipboard-check', 'heart-pulse'] %}
+    {% for tip in advisory.prevention_tips %}
+    <div class="rx-prevention-card">
+        <span class="rx-prevention-icon"><i data-lucide="{{ prevention_icons[loop.index0 % prevention_icons|length] }}" style="width:18px;height:18px;"></i></span>
+        <span>{{ tip }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── 8. Environmental Conditions ─────────────────────────────────── -->
+{% if advisory and advisory.environmental_note %}
+<div class="rx-section-title">
+    <span class="rx-section-icon"><i data-lucide="cloud-sun" style="width:20px;height:20px;"></i></span>
+    Environmental Conditions
+</div>
+<div class="rx-env-card">
+    <span class="rx-env-icon"><img src="/icons/pngtree-flat-temperature-icon-download-image_1148255.jpg" alt="" class="rx-icon-img-lg"></span>
+    <div class="rx-env-text">{{ advisory.environmental_note }}</div>
+</div>
+{% endif %}
+
+<!-- ── 9. XAI Explanation ─────────────────────────────────────────── -->
+{% if advisory and advisory.xai_explanation %}
+<div class="rx-section-title">
+    <span class="rx-section-icon"><i data-lucide="brain" style="width:20px;height:20px;"></i></span>
+    What the AI Sees (XAI Explanation)
+</div>
+<div class="rx-env-card" style="border-left: 4px solid #111;">
+    <span class="rx-env-icon"><img src="/icons/1730090.png" alt="" class="rx-icon-img-lg"></span>
+    <div class="rx-env-text" style="white-space: pre-line;">{{ advisory.xai_explanation }}</div>
+</div>
+{% endif %}
+
+<!-- ── 10. Scientific References (Accordion) ──────────────────────── -->
+{% if advisory and advisory.literature %}
+<div class="rx-section-title">
+    <span class="rx-section-icon"><i data-lucide="book-open" style="width:20px;height:20px;"></i></span>
+    Scientific References (2024–2025)
+</div>
+<div class="rx-accordion" id="rxLitAccordion">
+    <button class="rx-accordion-header" onclick="toggleAccordion('rxLitAccordion')">
+        <span><i data-lucide="file-text" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i> {{ advisory.literature|length }} peer-reviewed source{{ 's' if advisory.literature|length > 1 else '' }}</span>
+        <span class="rx-accordion-arrow">&#9660;</span>
+    </button>
+    <div class="rx-accordion-body">
+        <div class="rx-accordion-inner">
+            {% for ref in advisory.literature %}
+            <div class="rx-lit-item">{{ ref }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── 11. YOLO Raw Detections Table (Accordion — detect mode only) ── -->
+{% if mode == 'detect' and detections %}
+<div class="rx-section-title" style="margin-top: 1.5rem;">
+    <span class="rx-section-icon"><i data-lucide="list" style="width:20px;height:20px;"></i></span>
+    All Detections ({{ total_lesions }})
+</div>
+<div class="rx-accordion" id="rxDetectionsAccordion">
+    <button class="rx-accordion-header" onclick="toggleAccordion('rxDetectionsAccordion')">
+        <span>View all {{ total_lesions }} detection{{ 's' if total_lesions != 1 else '' }} with bounding boxes</span>
+        <span class="rx-accordion-arrow">&#9660;</span>
+    </button>
+    <div class="rx-accordion-body">
+        <div class="rx-accordion-inner" style="overflow-x: auto;">
+            <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(0,0,0,0.12); color: var(--text-muted);">
+                        <th style="padding: 0.5rem 0.8rem; text-align:left;">#</th>
+                        <th style="padding: 0.5rem 0.8rem; text-align:left;">Disease</th>
+                        <th style="padding: 0.5rem 0.8rem; text-align:right;">Confidence</th>
+                        <th style="padding: 0.5rem 0.8rem; text-align:right;">Bounding Box</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for det in detections %}
+                    <tr style="border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <td style="padding: 0.45rem 0.8rem; color: var(--text-muted);">{{ loop.index }}</td>
+                        <td style="padding: 0.45rem 0.8rem; font-weight: 600;">{{ det.class_name.replace('_', ' ') }}</td>
+                        <td style="padding: 0.45rem 0.8rem; text-align:right; color: #2e7d32; font-weight:600;">{{ '%.1f'|format(det.confidence * 100) }}%</td>
+                        <td style="padding: 0.45rem 0.8rem; text-align:right; color: var(--text-muted); font-family: monospace; font-size:0.8rem;">
+                            {{ det.bbox_xyxy | map('int') | join(', ') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── 12. Severity Guide (detect mode) ───────────────────────────── -->
+{% if mode == 'detect' %}
+<div class="rx-section-title" style="margin-top: 1.5rem;">
+    <span class="rx-section-icon"><i data-lucide="ruler" style="width:20px;height:20px;"></i></span>
+    Severity Guide
+</div>
+<div class="rx-accordion open" id="rxSeverityGuide">
+    <button class="rx-accordion-header" onclick="toggleAccordion('rxSeverityGuide')">
+        <span>Understanding infection severity levels</span>
+        <span class="rx-accordion-arrow">&#9660;</span>
+    </button>
+    <div class="rx-accordion-body">
+        <div class="rx-accordion-inner">
+            <div class="rx-prevention-grid" style="margin-top: 0;">
+                <div class="rx-prevention-card">
+                    <span class="rx-prevention-icon"><i data-lucide="check-circle" style="width:18px;height:18px;color:#2e7d32;"></i></span>
+                    <span><strong>None</strong> — No lesions found; fruit appears healthy.</span>
+                </div>
+                <div class="rx-prevention-card" style="border-left-color: #f9a825;">
+                    <span class="rx-prevention-icon"><i data-lucide="alert-circle" style="width:18px;height:18px;color:#f9a825;"></i></span>
+                    <span><strong>Low (1–2)</strong> — Early stage; monitor and apply preventive fungicide.</span>
+                </div>
+                <div class="rx-prevention-card" style="border-left-color: #ef6c00;">
+                    <span class="rx-prevention-icon"><i data-lucide="alert-triangle" style="width:18px;height:18px;color:#ef6c00;"></i></span>
+                    <span><strong>Moderate (3–6)</strong> — Targeted treatment recommended; isolate affected plants.</span>
+                </div>
+                <div class="rx-prevention-card" style="border-left-color: #c62828;">
+                    <span class="rx-prevention-icon"><i data-lucide="alert-octagon" style="width:18px;height:18px;color:#c62828;"></i></span>
+                    <span><strong>High (7–12)</strong> — Aggressive treatment required; risk of spread is high.</span>
+                </div>
+                <div class="rx-prevention-card" style="border-left-color: #6a1b9a;">
+                    <span class="rx-prevention-icon"><i data-lucide="skull" style="width:18px;height:18px;color:#6a1b9a;"></i></span>
+                    <span><strong>Severe (13+)</strong> — Consider pruning heavily infected tissue; quarantine plant.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── 13. Action Footer ──────────────────────────────────────────── -->
+<div class="rx-actions">
+    {% if mode == 'disease' %}
+        <a href="{{ url_for('disease_page') }}" class="btn btn-outline"><i data-lucide="microscope" style="width:16px;height:16px;"></i> Analyze Another Image</a>
+        <a href="{{ url_for('detect_page') }}" class="btn btn-outline"><i data-lucide="crosshair" style="width:16px;height:16px;"></i> Try Lesion Detector</a>
+    {% elif mode == 'detect' %}
+        <a href="{{ url_for('detect_page') }}" class="btn btn-outline"><i data-lucide="crosshair" style="width:16px;height:16px;"></i> Detect Another Image</a>
+        <a href="{{ url_for('disease_page') }}" class="btn btn-outline"><i data-lucide="microscope" style="width:16px;height:16px;"></i> Go to Disease Lab</a>
+    {% endif %}
+    <a href="{{ url_for('index') }}" class="btn btn-primary"><i data-lucide="home" style="width:16px;height:16px;"></i> Back to Home</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     ASK AGROBOT — Floating Chat Button + Panel
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- FAB Button -->
+<button class="fab-chat" id="fabChat" onclick="toggleChat()" title="Ask Agrobot">
+    <i data-lucide="message-circle" style="width:26px;height:26px;"></i>
+    <span class="fab-badge"></span>
+</button>
+
+<!-- Chat Panel -->
+<div class="chat-panel" id="chatPanel">
+    <div class="chat-panel-header">
+        <h3><i data-lucide="bot" style="width:18px;height:18px;"></i> Agrobot Assistant</h3>
+        <button class="chat-panel-close" onclick="toggleChat()"><i data-lucide="x" style="width:18px;height:18px;"></i></button>
+    </div>
+    <div class="chat-panel-body" id="chatBody">
+        <div class="chat-bubble bot">
+            Hi! I'm Agrobot, your agricultural assistant.
+        </div>
+        <div class="chat-bubble bot">
+            I can see you're looking at a <strong>{{ prediction.replace('_', ' ') }}</strong> diagnosis
+            with <strong>{{ '%.0f'|format(confidence * 100) }}%</strong> confidence.
+            {% if advisory and advisory.severity != 'None' %}
+            The severity level is <strong>{{ advisory.severity }}</strong>.
+            {% endif %}
+        </div>
+        <div class="chat-bubble bot">
+            Ask me anything about this disease, its treatment, or prevention measures!
+        </div>
+    </div>
+    <div class="chat-panel-input">
+        <input type="text" id="chatInput" placeholder="Ask about this diagnosis..."
+               onkeypress="if(event.key==='Enter')sendChatMessage()">
+        <button onclick="sendChatMessage()"><i data-lucide="send" style="width:16px;height:16px;"></i></button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── Re-initialize Lucide icons for this page ─────────────────────── */
+if(typeof lucide !== 'undefined') lucide.createIcons();
+
+/* ── Accordion Toggle ─────────────────────────────────────────────── */
+function toggleAccordion(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+}
+
+/* ── Chat Panel Toggle ────────────────────────────────────────────── */
+function toggleChat() {
+    const panel = document.getElementById('chatPanel');
+    const fab   = document.getElementById('fabChat');
+    panel.classList.toggle('open');
+
+    // Hide badge after first open
+    const badge = fab.querySelector('.fab-badge');
+    if (badge) badge.style.display = 'none';
+}
+
+/* ── Chat Message (Placeholder — connects to your friend's API later) */
+function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const body  = document.getElementById('chatBody');
+    const text  = input.value.trim();
+    if (!text) return;
+
+    // User bubble
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble user';
+    userBubble.textContent = text;
+    body.appendChild(userBubble);
+
+    input.value = '';
+    body.scrollTop = body.scrollHeight;
+
+    // Simulated bot response (placeholder)
+    setTimeout(() => {
+        const botBubble = document.createElement('div');
+        botBubble.className = 'chat-bubble bot';
+
+        // Context-aware placeholder responses
+        const disease = '{{ prediction }}';
+        const responses = {
+            'Anthracnose': `For Anthracnose, I recommend applying Prochloraz (500 ppm) as your primary fungicide. Would you like specific dosage calculations for your orchard size?`,
+            'Stem_Canker': `Stem Canker requires immediate pruning of infected cladodes. Apply 5% amino-oligosaccharide solution to cut surfaces. Shall I explain the application process?`,
+            'Soft_Rot': `Soft Rot is bacterial — stop watering immediately and remove all infected tissue. Copper hydroxide (77%) is your best bactericide. Need application details?`,
+            'Brown_Stem_Spot': `Brown Stem Spot responds well to propiconazole (0.1%) or difenoconazole. Apply at 14-day intervals. Want me to explain the spray schedule?`,
+            'Gray_Blight': `Gray Blight is often secondary — check for wounds or storm damage first. Apply mancozeb (0.25%) and improve canopy airflow. Any questions about pruning techniques?`,
+            'Healthy': `Your plant looks healthy! Keep up the routine monitoring. Would you like tips on preventive care or optimal growing conditions?`,
+        };
+
+        botBubble.innerHTML = responses[disease] ||
+            `Thank you for your question about "${text}". The Knowledge Agent is being integrated by your team. Once connected, I'll provide detailed, AI-powered answers specific to your diagnosis.`;
+
+        body.appendChild(botBubble);
+        body.scrollTop = body.scrollHeight;
+    }, 800);
+}
+
+/* ── Auto-scroll chat on load ─────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+    const body = document.getElementById('chatBody');
+    if (body) body.scrollTop = body.scrollHeight;
+});
+</script>
+{% endblock %}

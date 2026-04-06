@@ -29,6 +29,13 @@
             <p class="mode-subtext">Locate and count individual disease lesions with YOLOv8 bounding-box annotations and severity scoring.</p>
             <span class="btn btn-outline" style="width: fit-content;">Open Lesion Detector</span>
         </a>
+
+        <a class="mode-card" href="{{ url_for('camera_page') }}" style="border-color:#2e7d32; border-style:dashed;">
+            <span class="badge" style="width: fit-content; background:#2e7d32;">Live Scanner</span>
+            <div class="mode-title">Guided Field Camera</div>
+            <p class="mode-subtext">Point your camera at the plant. AI-powered blur detection, distance guidance, and flash control for optimal field diagnosis.</p>
+            <span class="btn btn-outline" style="width: fit-content;">Open Live Scanner</span>
+        </a>
     </div>
 </div>
 {% endblock %}

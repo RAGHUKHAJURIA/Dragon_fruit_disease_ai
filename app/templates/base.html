@@ -6,17 +6,22 @@
     <meta name="description" content="Dragon Fruit AI Suite - Disease Diagnosis and Quality Grading">
     <title>{% block title %}Dragon Fruit AI Suite{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <canvas id="particles-canvas"></canvas>
 
 <nav class="top-nav">
     <div class="top-nav-inner">
-        <a class="brand" href="{{ url_for('index') }}">Dragon Fruit AI Suite</a>
+        <a class="brand" href="{{ url_for('index') }}"><img src="/icons/8645362.png" alt="" class="brand-icon">Dragon Fruit AI Suite</a>
         <div class="nav-links">
             <a href="{{ url_for('disease_page') }}" class="{% if request.endpoint in ['disease_page', 'predict_disease'] %}active{% endif %}">Disease Lab</a>
             <a href="{{ url_for('quality_page') }}" class="{% if request.endpoint in ['quality_page', 'predict_quality'] %}active{% endif %}">Quality Grading</a>
             <a href="{{ url_for('detect_page') }}" class="{% if request.endpoint in ['detect_page', 'predict_detect'] %}active{% endif %}">Lesion Detector</a>
+            <a href="{{ url_for('camera_page') }}" class="{% if request.endpoint == 'camera_page' %}active{% endif %}"><i data-lucide="scan-line" style="width:14px;height:14px;vertical-align:middle;margin-right:2px;"></i> Live Scanner</a>
+            {% if request.endpoint in ['predict_disease', 'predict_detect', 'camera_result'] %}
+            <a href="#" class="active"><img src="/icons/medical-record-icon-report-vector-isolated-illustration-white-background-168809770.webp" alt="" class="nav-icon"> Prescription</a>
+            {% endif %}
         </div>
     </div>
 </nav>
@@ -125,5 +130,6 @@
 </script>
 
 {% block scripts %}{% endblock %}
+<script>if(typeof lucide !== 'undefined') lucide.createIcons();</script>
 </body>
 </html>
