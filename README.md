@@ -30,13 +30,21 @@ A full-stack AI-powered web application for automated **dragon fruit disease dia
 
 Dragon fruit (*Hylocereus* spp.) is susceptible to several devastating diseases that cause significant economic losses. Early and accurate detection is critical for effective management. This project presents an end-to-end system that:
 
-1. **Classifies** 6 disease classes from plant images using a hybrid **ConViTX** (CNN + Transformer) model
-2. **Detects** individual lesions with bounding boxes using a fine-tuned **YOLOv8** object detector
-3. **Grades** fruit quality into 4 market categories (Defect / Fresh / Immature / Mature)
-4. **Explains** decisions visually using **Grad-CAM** heatmaps
-5. **Scans** plants in real-time via a **Guided Live Camera** with blur detection, distance guidance, and flash control
-6. **Recommends** targeted treatment protocols from a curated 2024–2025 knowledge base
-7. **Serves** everything through a mobile-first **Flask web interface** with a unified prescription hub
+1. **Classifies** 6 disease classes from plant images using a hybrid **ConViTX** (CNN + Transformer) model with **Test-Time Augmentation (TTA)** for robust 95.76% accuracy.
+2. **Detects** individual lesions with bounding boxes using a fine-tuned **YOLOv8** object detector.
+3. **Grades** fruit quality into 4 market categories (Defect / Fresh / Immature / Mature).
+4. **Explains** decisions visually using true **Grad-CAM** heatmaps extracted from the MobileNetV3 layer.
+5. **Scans** plants in real-time via a **Guided Live Camera** with blur detection, distance guidance, and flash control.
+6. **Recommends** targeted treatment protocols from a curated 2024–2025 knowledge base.
+7. **Answers** follow-up questions dynamically via the integrated **Agrobot Chatbot** (`/api/chat`).
+8. **Serves** everything through a mobile-first **Flask web interface** with a unified prescription hub.
+
+### 🌟 Recent Implementations & Achievements (Midterm Updates)
+- **Interactive Agrobot Chatbot**: Fully integrated a context-aware chatbot interface (`treatment.html`) that queries the `advisor.py` knowledge base via a new `/api/chat` POST route. It provides dynamic conversational advice (treatments, severities, pathogens) complete with typing indicators and markdown formatting.
+- **Test-Time Augmentation (TTA)**: Engineered a 6-pass TTA inference loop (original + flips + rotations) into the Grad-CAM prediction phase, maximizing confidence scores in varied lighting.
+- **Edge-Optimized XAI**: Corrected Grad-CAM thermal mapping logic by targeting the exact final InvertedResidual block (`model.cnn_branch[12]`) of the MobileNetV3 stem before the Vision Transformer layer, ensuring heatmaps perfectly highlight pathological lesions.
+- **Numerically Stable DirectML Training**: Implemented a clamped **Focal Loss** mechanism (`train_convitx_pretrained.py`) to prevent gradient explosions and NaN errors when training on AMD GPUs using Windows DirectML.
+
 
 ---
 
@@ -247,6 +255,15 @@ Input Image → YOLOv8n Inference → NMS Filtering
     → Severity Score (None → Low → Moderate → High → Severe)
     → Dominant Disease → Knowledge Base → Treatment Plan
 ```
+
+## System Architecture & YOLOv8 Algorithm (Summary)
+
+- **System architecture (concise):** Mobile-first Flask web app (`app/main.py`) that accepts images via upload or live camera, routes them to three AI pipelines (ConViTX classifier, YOLOv8 detector, ConViTX quality grader), generates XAI overlays with `xai/gradcam.py`, then composes a unified treatment prescription using `chatbot/advisor.py` and the knowledge base. Models and weights live under `models/` and inference/training scripts include `detect_disease.py` and `train_yolo_directml.py`.
+
+- **Algorithm used (YOLOv8) — short description:** YOLOv8 is a modern single-stage object detector that predicts bounding boxes and class scores directly from image feature maps for real-time detection. In this project we use the Ultralytics `YOLO` API to load a YOLOv8-nano backbone and train it on the lesion dataset (`data_dragon_lesions.yaml`). Training uses standard YOLO augmentations (mosaic, mixup, HSV jitter, flips), a classification/objectness loss, and NMS-based post-processing. The detection outputs (box coordinates, class labels, confidences) are used to compute per-class lesion counts and a severity score.
+
+- **Key training/inference notes (from `train_yolo_directml.py`):** learning rate and scheduler tuned via `lr0`/`lrf`, AMP disabled on non-CUDA devices, CPU fallback on Windows DirectML, and augmentation parameters (mosaic, mixup, hsv) are enabled to improve robustness on a small dataset.
+
 
 ---
 
