@@ -1,0 +1,105 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Dragon Fruit AI Suite — UI Enhancement Patch
+   Drop this AFTER the existing style.css import.
+   Keeps the black & white palette, fixes layout & section structure.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root{--text-primary:#111111;--text-secondary:#555555;--text-muted:#888888;--surface-1:#f7f7f7;--surface-2:#ffffff;--border:rgba(0,0,0,0.08);--transition:0.25s cubic-bezier(0.4,0,0.2,1)}
+*{box-sizing:border-box}
+body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:var(--text-primary);font-size:0.92rem;line-height:1.62}
+
+/* Top nav */
+.top-nav{background:transparent;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:40}
+.top-nav-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.65rem 1.5rem;max-width:1060px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:0.6rem;font-weight:700;color:var(--text-primary);text-decoration:none}
+.brand-icon{width:34px;height:34px;object-fit:contain;border-radius:8px}
+.nav-links{display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap}
+.nav-links a{color:var(--text-primary);text-decoration:none;font-size:0.86rem;padding:0.38rem 0.7rem;border-radius:8px;display:inline-flex;gap:0.45rem;align-items:center}
+.nav-links a.active{border:1px solid rgba(0,0,0,0.10);background:var(--surface-2)}
+
+/* Home mode cards */
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:0}
+.mode-card{display:flex;flex-direction:column;gap:0.65rem;padding:1.4rem;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);transition:var(--transition);text-decoration:none;color:inherit}
+.mode-card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(0,0,0,0.04)}
+.mode-card .badge{font-weight:700;font-size:0.68rem;padding:0.26rem 0.7rem;border-radius:99px;display:inline-block}
+.mode-title{font-size:1.05rem;font-weight:700;margin:0}
+.mode-subtext{color:var(--text-secondary);font-size:0.88rem}
+.mode-grid .mode-card:last-child{grid-column:1 / -1;flex-direction:row;align-items:center;gap:1.2rem;padding:1.4rem 1.8rem;border-style:dashed}
+
+/* Glass container */
+.glass-container{border-radius:16px;padding:1.6rem;border:1px solid var(--border);background:linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,255,255,0.99))}
+
+/* Upload two-column */
+.upload-area{padding:1.6rem;border-radius:12px;border:1px dashed rgba(0,0,0,0.06);display:flex;flex-direction:column;align-items:center;gap:0.6rem;min-height:220px;position:relative;cursor:pointer;overflow:hidden}
+.upload-area.drag-over{border-color:rgba(0,0,0,0.18);transform:translateY(-2px)}
+.upload-preview{max-width:100%;max-height:280px;display:block;border-radius:10px;object-fit:contain;margin-top:0.6rem}
+.upload-two-col{display:grid;grid-template-columns:1fr 300px;gap:1.2rem;align-items:start}
+.upload-info-panel{background:rgba(0,0,0,0.03);border-radius:12px;padding:1rem;border:1px solid var(--border)}
+.upload-info-panel h3{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin:0 0 0.6rem;border-bottom:1px solid rgba(0,0,0,0.06);padding-bottom:0.55rem}
+.info-chip{display:flex;gap:0.65rem;align-items:flex-start;font-size:0.86rem;color:var(--text-secondary)}
+.chip-icon{width:26px;height:26px;border-radius:6px;background:rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0}
+.btn-block{display:inline-flex;align-items:center;justify-content:center;gap:0.45rem;padding:0.5rem 0.9rem;border-radius:10px}
+
+/* Disease grid */
+.disease-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0.8rem;margin-top:1rem}
+.disease-mini-card{padding:0.95rem;border-radius:10px;border:1px solid var(--border);background:#fff}
+
+/* RX header & evidence */
+.rx-header{border-radius:14px;padding:1.4rem;border:1px solid var(--border);display:flex;gap:1rem;align-items:center}
+.rx-header-body h1{font-size:1.6rem;margin:0;letter-spacing:-0.025em}
+.rx-evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+.rx-evidence-card{border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#fff}
+.rx-evidence-card img{width:100%;height:300px;object-fit:contain}
+
+/* Step card */
+.rx-step-card{border-left:3px solid #000;border-radius:0 10px 10px 0;padding:0.9rem 1rem;background:rgba(0,0,0,0.02);display:flex;gap:0.8rem;align-items:flex-start}
+.rx-step-card:hover{transform:translateX(3px);border-left-color:#555}
+
+/* Prob bar */
+.prob-item{display:flex;gap:0.8rem;align-items:center}
+.prob-item .name{width:150px;font-size:0.82rem;color:var(--text-secondary)}
+.prob-item .bar-wrap{flex:1;background:rgba(0,0,0,0.04);border-radius:6px;height:18px;overflow:hidden;position:relative}
+.prob-item .bar-fill{height:100%;background:#111;transition:width var(--transition)}
+
+/* Camera */
+.camera-page{max-width:640px;margin:0 auto}
+.camera-viewport{border-radius:14px;width:100%;aspect-ratio:16/11;background:#fafafa;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.camera-scores{display:flex;gap:0.6rem;margin-top:0.5rem;align-items:center}
+.score-item{font-size:0.78rem;padding:0.4rem 0.6rem;border-radius:8px;background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.06)}
+.camera-controls{display:flex;gap:0.8rem;align-items:center;margin-top:0.6rem}
+.camera-mode-toggle{border-radius:10px;border:1.5px solid #000;padding:0.25rem;display:flex;gap:0.45rem;background:#fff}
+.camera-capture-btn{width:64px;height:64px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;background:#fff;border:2px solid #000}
+
+/* VQA */
+.vqa-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+.vqa-question-chips{display:flex;flex-wrap:wrap;gap:0.5rem}
+.vqa-question-chips button{border-radius:99px;padding:0.32rem 0.7rem;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.12);font-size:0.78rem;cursor:pointer}
+
+/* Spinner overlay */
+.spinner-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;gap:0.8rem;z-index:1000}
+.spinner-overlay.active{display:flex;background:rgba(255,255,255,0.94);backdrop-filter:blur(8px)}
+.spinner-text{font-size:0.95rem;font-weight:500;color:var(--text-primary)}
+
+/* Flash */
+.flash-msg{border-radius:10px;padding:0.9rem 1.2rem;font-size:0.9rem;border:1px solid var(--border);background:rgba(0,0,0,0.02)}
+
+@media (max-width:768px){.mode-grid{grid-template-columns:1fr}.upload-two-col{grid-template-columns:1fr}.vqa-form-grid{grid-template-columns:1fr}.top-nav-inner{flex-direction:column;align-items:flex-start}.camera-page{padding:0 1rem}.fab-chat{right:16px;bottom:16px}}
+
+/* Force card-like boxes to have solid black borders as requested */
+
+.card, .glass-container, .mode-card, .disease-mini-card, .upload-area, .upload-info-panel,
+.rx-evidence-card, .rx-header, .rx-step-card, .prob-item, .vision-card-large,
+.quality-summary .card, .quality-stat-card, .camera-viewport, .camera-controls,
+.vqa-form-left, .vqa-form-right, .mode-grid .mode-card, .card-header {
+   border: 3px solid #000 !important;
+}
+
+/* Ensure button outlines remain visible and slightly thicker */
+.btn, .btn-outline, .btn-primary {
+   border: 2px solid #000 !important;
+}
+
+/* Slight contrast tweak for upload-area dashed state */
+.upload-area.drag-over{border-style:solid}

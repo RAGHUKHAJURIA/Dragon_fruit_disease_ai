@@ -107,6 +107,7 @@ class ConViTXConfig:
     dropout: float = 0.1
     drop_path_rate: float = 0.1
     param_budget: int = 700_000
+    img_size: int = 224       # Expected input image size (used to pre-compute seq length)
 
 class ConViTXSmall(nn.Module):
     """Dual-branch CNN + ViT model for edge deployment."""
@@ -129,7 +130,10 @@ class ConViTXSmall(nn.Module):
 
         # --- ViT Branch (Global Context) ---
         self.patch_embed = nn.Conv2d(3, cfg.vit_dim, kernel_size=16, stride=16)
-        self.pos_embed = nn.Parameter(torch.zeros(1, 14 * 14, cfg.vit_dim))
+        # Compute expected sequence length from img_size
+        _seq_len = (cfg.img_size // 16) ** 2
+        self.pos_embed = nn.Parameter(torch.zeros(1, _seq_len, cfg.vit_dim))
+        self._pos_grid_size = cfg.img_size // 16   # stored for interpolation
         self.pos_drop = nn.Dropout(cfg.dropout)
         
         self.transformer_blocks = nn.ModuleList([
@@ -165,18 +169,31 @@ class ConViTXSmall(nn.Module):
 
         vit_patches = self.patch_embed(x)
         b, c, h, w = vit_patches.shape
-        tokens = vit_patches.flatten(2).transpose(1, 2)
-        tokens = self.pos_drop(tokens + self.pos_embed)
-        
+        tokens = vit_patches.flatten(2).transpose(1, 2)   # (B, h*w, C)
+
+        # Interpolate positional embedding if spatial size differs from stored grid
+        if h != self._pos_grid_size or w != self._pos_grid_size:
+            # pos_embed: (1, grid^2, C) → reshape → interpolate → flatten
+            gs = self._pos_grid_size
+            pos = self.pos_embed.reshape(1, gs, gs, c).permute(0, 3, 1, 2)  # (1,C,gs,gs)
+            pos = torch.nn.functional.interpolate(
+                pos, size=(h, w), mode="bilinear", align_corners=False
+            )
+            pos = pos.permute(0, 2, 3, 1).reshape(1, h * w, c)              # (1, h*w, C)
+        else:
+            pos = self.pos_embed
+
+        tokens = self.pos_drop(tokens + pos)
+
         for blk in self.transformer_blocks:
             tokens = blk(tokens)
-            
+
         tokens = self.vit_norm(tokens)
         vit_feat = tokens.transpose(1, 2).reshape(b, -1, h, w)
 
         fused = torch.cat([cnn_feat, vit_feat], dim=1)
         fused_map = self.fusion_conv(fused)
-        
+
         out = self.pool(fused_map)
         out = torch.flatten(out, 1)
         out = self.head(out)

@@ -21,6 +21,11 @@ sys.path.insert(0, ROOT)
 
 from xai.gradcam import run_gradcam, get_target_layer_efficientnet, infer_transforms
 from chatbot.knowledge_base import generate_recommendation, DISEASE_KNOWLEDGE
+# Ensure environment variables from .env are loaded early
+try:
+    import chatbot.config  # noqa: F401
+except Exception:
+    pass
 
 # ─── CONSTANTS ───────────────────────────────────────────────────────────────
 MODEL_PATH   = os.path.join(ROOT, "models", "best_model.pth")

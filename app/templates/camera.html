@@ -80,7 +80,7 @@
         </div>
     </div>
 
-    <!-- Mode Toggle: Disease vs Detect -->
+    <!-- Mode Toggle: Disease vs Detect vs VQA -->
     <div class="camera-mode-toggle">
         <input type="radio" name="analysisMode" id="modeDisease" value="disease" checked>
         <label for="modeDisease">
@@ -90,6 +90,21 @@
         <label for="modeDetect">
             <i data-lucide="crosshair" style="width:14px;height:14px;"></i> Lesion Detector
         </label>
+        <input type="radio" name="analysisMode" id="modeVQA" value="vqa">
+        <label for="modeVQA">
+            <i data-lucide="message-square" style="width:14px;height:14px;"></i> Ask AI
+        </label>
+    </div>
+
+    <!-- VQA Question Input (shown only when VQA mode selected) -->
+    <div class="camera-vqa-input" id="cameraVqaInput" style="display:none;">
+        <input type="text" id="cameraQuestion" placeholder="Ask a question about the plant..." class="vqa-input" style="margin:0;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+            <span class="vqa-chip" data-q="What disease is this?" onclick="setCamQuestion(this)">What disease?</span>
+            <span class="vqa-chip" data-q="How serious is this?" onclick="setCamQuestion(this)">How serious?</span>
+            <span class="vqa-chip" data-q="What fungicide should I use?" onclick="setCamQuestion(this)">What fungicide?</span>
+            <span class="vqa-chip" data-q="How can I prevent this?" onclick="setCamQuestion(this)">Prevention?</span>
+        </div>
     </div>
 
     <!-- Capture Button -->
@@ -308,14 +323,16 @@ async function analyzePhoto() {
     setStatus('loading', 'Analyzing with AI...');
 
     const mode = document.querySelector('input[name="analysisMode"]:checked').value;
+    const question = document.getElementById('cameraQuestion') ? document.getElementById('cameraQuestion').value : '';
 
     try {
         const resp = await fetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                mode:  mode,
-                image: capturedData,
+                mode:     mode,
+                image:    capturedData,
+                question: question,
             }),
         });
 
@@ -362,6 +379,24 @@ window.addEventListener('beforeunload', () => {
     if (analysisLoop) clearInterval(analysisLoop);
     if (stream) stream.getTracks().forEach(t => t.stop());
 });
+
+// ── 13. VQA Mode Toggle ─────────────────────────────────────────
+document.querySelectorAll('input[name="analysisMode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+        const vqaInput = document.getElementById('cameraVqaInput');
+        if (radio.value === 'vqa' && radio.checked) {
+            vqaInput.style.display = 'block';
+        } else {
+            vqaInput.style.display = 'none';
+        }
+    });
+});
+
+function setCamQuestion(chip) {
+    document.getElementById('cameraQuestion').value = chip.dataset.q;
+    chip.parentElement.querySelectorAll('.vqa-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+}
 
 // ── Initialize ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {

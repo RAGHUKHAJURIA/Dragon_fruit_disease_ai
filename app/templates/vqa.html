@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Visual Q&A — Dragon Fruit AI Suite{% endblock %}
+
+{% block content %}
+<header class="app-header">
+    <h1>Visual Question & Answer</h1>
+    <p>Upload a dragon fruit image and ask a question — the AI combines visual analysis with agricultural expertise to answer.</p>
+    <!-- badges removed as requested -->
+</header>
+
+<div class="glass-container" style="max-width: 740px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="icon icon-upload"><i data-lucide="message-square-plus" style="width:28px;height:28px;color:var(--primary);"></i></div>
+        <h2>Ask About Your Plant</h2>
+    </div>
+
+    <form id="vqaForm" action="{{ url_for('predict_vqa') }}" method="POST" enctype="multipart/form-data">
+        <!-- Image Upload -->
+        <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <span class="upload-icon"><i data-lucide="image-plus" style="width:48px;height:48px;color:var(--text-muted);"></i></span>
+            <p><strong>Click to browse</strong> or drag & drop an image</p>
+            <p class="hint">JPG, PNG, WebP · Max 10 MB</p>
+            <img id="preview" class="upload-preview" alt="Preview">
+        </div>
+        <input type="file" name="image" id="fileInput" accept="image/*">
+
+        <!-- Question Input -->
+        <div class="vqa-question-section">
+            <label for="questionInput" class="vqa-label">
+                <i data-lucide="help-circle" style="width:16px;height:16px;vertical-align:middle;"></i>
+                Your Question
+            </label>
+            <input
+                type="text"
+                name="question"
+                id="questionInput"
+                class="vqa-input"
+                placeholder="e.g. What disease is this? / Is this rot severe? / What fungicide should I use?"
+                autocomplete="off"
+                required
+            >
+            <div class="vqa-suggestions" id="suggestions">
+                <span class="vqa-chip" data-q="What disease is this?">What disease is this?</span>
+                <span class="vqa-chip" data-q="How serious is this?">How serious is this?</span>
+                <span class="vqa-chip" data-q="What fungicide should I use?">What fungicide should I use?</span>
+                <span class="vqa-chip" data-q="How can I prevent this?">How can I prevent this?</span>
+                <span class="vqa-chip" data-q="What organism causes this?">What pathogen causes this?</span>
+                <span class="vqa-chip" data-q="How do I treat this?">How do I treat this?</span>
+            </div>
+        </div>
+
+        <!-- Language Selector (Dropdown — mobile-friendly) -->
+        <div class="vqa-lang-section">
+            <label for="langSelect" class="vqa-label">
+                <i data-lucide="globe" style="width:16px;height:16px;vertical-align:middle;"></i>
+                Answer Language / भाषा चुनें
+            </label>
+            <select name="lang" id="langSelect" class="vqa-input" style="cursor:pointer;">
+                <option value="en">🇬🇧  English</option>
+                <option value="hi">🇮🇳  हिन्दी (Hindi)</option>
+                <option value="te">🇮🇳  తెలుగు (Telugu)</option>
+                <option value="kn">🇮🇳  ಕನ್ನಡ (Kannada)</option>
+                <option value="ta">🇮🇳  தமிழ் (Tamil)</option>
+                <option value="ml">🇮🇳  മലയാളം (Malayalam)</option>
+                <option value="mr">🇮🇳  मराठी (Marathi)</option>
+                <option value="bn">🇮🇳  বাংলা (Bengali)</option>
+                <option value="vi">🇻🇳  Tiếng Việt</option>
+                <option value="th">🇹🇭  ภาษาไทย</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="submitBtn" disabled>
+            <i data-lucide="sparkles" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"></i>
+            Ask AI
+        </button>
+    </form>
+</div>
+
+<!-- Result Area (only shown after prediction) -->
+{% if result %}
+<div class="glass-container" style="max-width: 740px; margin: 2rem auto 0;" id="vqaResult">
+    <div class="card-header">
+        <div class="icon" style="background: linear-gradient(135deg, var(--primary), var(--accent));"><i data-lucide="bot" style="width:28px;height:28px;color:#fff;"></i></div>
+        <h2>AI Answer</h2>
+    </div>
+
+    <div class="vqa-result-grid">
+        <div class="vqa-result-image">
+            <img src="{{ img_url }}" alt="Uploaded image">
+        </div>
+
+        <div class="vqa-result-content">
+            <div class="vqa-question-echo">
+                <i data-lucide="help-circle" style="width:16px;height:16px;"></i>
+                <span>{{ question }}</span>
+            </div>
+
+            <div class="vqa-confidence-bar">
+                <div class="vqa-conf-label">Confidence</div>
+                <div class="score-bar" style="flex:1;">
+                    <div class="score-fill {{ 'good' if confidence > 0.7 else 'warn' if confidence > 0.4 else 'poor' }}"
+                         style="width: {{ (confidence * 100)|round(1) }}%;">
+                    </div>
+                </div>
+                <div class="vqa-conf-value">{{ (confidence * 100)|round(1) }}%</div>
+            </div>
+
+            <!-- Answer box — will be updated client-side on language switch -->
+            <div class="vqa-answer-box" id="answerBox">
+                <p id="answerText">{{ answer_text }}</p>
+            </div>
+
+            <!-- Read Aloud Button -->
+            <button type="button" id="readAloudBtn" class="btn btn-primary" style="width:auto; padding:0.5rem 1.2rem; font-size:0.85rem;" onclick="readAloud()">
+                <i data-lucide="volume-2" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+                Read Aloud
+            </button>
+
+            <div class="vqa-meta">
+                <span class="badge" style="font-size:0.75rem;">{{ disease_class | replace('_', ' ') }}</span>
+                <span class="badge-outline" style="font-size:0.75rem;">{{ question_type | title }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden data for client-side translation -->
+<input type="hidden" id="resultAnswerId" value="{{ answer_id }}">
+<input type="hidden" id="resultConfidence" value="{{ confidence }}">
+{% endif %}
+
+<!-- How to Use -->
+<div style="max-width: 740px; margin: 2.5rem auto 0;">
+    <h3 style="text-align:center; color: var(--text-secondary); margin-bottom: 1rem;">How to Use</h3>
+    <div class="mode-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="disease-mini-card" style="text-align:center;">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">📷</div>
+            <h4>1. Upload a Photo</h4>
+            <p class="pathogen">Take a clear photo of the affected part of your dragon fruit plant.</p>
+        </div>
+        <div class="disease-mini-card" style="text-align:center;">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">❓</div>
+            <h4>2. Ask a Question</h4>
+            <p class="pathogen">Type or tap a question — like "What disease is this?" or "How do I treat it?"</p>
+        </div>
+        <div class="disease-mini-card" style="text-align:center;">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">💡</div>
+            <h4>3. Get Expert Advice</h4>
+            <p class="pathogen">The AI analyzes the image and gives you a specific answer with treatment guidance.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Translation dictionary (cached)
+let answerDict = {};
+async function loadDictionary(){ try{ const resp = await fetch('/static/mobile_answer_dict.json'); answerDict = await resp.json(); }catch(e){ console.warn('Dictionary load failed', e); } }
+loadDictionary();
+
+// Minimal upload + preview logic
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const preview = document.getElementById('preview');
+const submitBtn = document.getElementById('submitBtn');
+const form = document.getElementById('vqaForm');
+const questionIn = document.getElementById('questionInput');
+
+fileInput && fileInput.addEventListener('change', e => { if(e.target.files.length) showPreview(e.target.files[0]); });
+function showPreview(file){ const r = new FileReader(); r.onload = ev => { preview.src = ev.target.result; preview.classList.add('visible'); submitBtn.disabled = false; }; r.readAsDataURL(file); }
+
+document.querySelectorAll('.vqa-chip').forEach(c => c.addEventListener('click', () => { questionIn.value = c.dataset.q; submitBtn.disabled = false; }));
+
+function readAloud(){ const t = document.getElementById('answerText'); if(!t) return; const u = new SpeechSynthesisUtterance(t.textContent||''); window.speechSynthesis.speak(u); }
+
+// Language switch (client-side)
+document.getElementById('langSelect')?.addEventListener('change', function(){ const aid = document.getElementById('resultAnswerId'); if(!aid) return; const lang = this.value; if(answerDict[lang] && answerDict[lang][aid.value]) document.getElementById('answerText').textContent = answerDict[lang][aid.value]; });
+</script>
+{% endblock %}

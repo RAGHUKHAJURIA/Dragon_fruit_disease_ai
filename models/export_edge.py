@@ -26,11 +26,11 @@ def main():
     print(f"Loading {args.model_path} ...")
     model = build_convitx_base(num_classes=args.num_classes, enforce_budget=False)
     
-    # Load weights
+    # Load weights — fall back to weights_only=False for numpy-serialized checkpoints
     try:
         state_dict = torch.load(args.model_path, map_location="cpu", weights_only=True)
-    except TypeError:
-        state_dict = torch.load(args.model_path, map_location="cpu")
+    except Exception:
+        state_dict = torch.load(args.model_path, map_location="cpu", weights_only=False)
     model.load_state_dict(state_dict)
     model.eval()
 

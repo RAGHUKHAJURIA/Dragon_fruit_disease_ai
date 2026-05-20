@@ -9,6 +9,13 @@ import json
 from dataclasses import dataclass, asdict
 from typing import Optional
 
+# Optional LLM integration (non-breaking)
+try:
+    from chatbot.llm_client import generate_text as llm_generate_text
+except Exception:
+    def llm_generate_text(prompt: str, max_tokens: int = 256) -> str:  # type: ignore
+        return ""
+
 # ─── 6-CLASS KNOWLEDGE DATABASE ──────────────────────────────────────────────
 DISEASE_KNOWLEDGE = {
     "Healthy": {
@@ -222,6 +229,7 @@ class ChatbotResponse:
     environmental_note: str
     xai_explanation:    str
     literature:         list
+    llm_summary:         Optional[str] = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -292,6 +300,25 @@ def generate_recommendation(
         f"{'caused by ' + db['pathogen'] if db['pathogen'] else '(healthy plant)'}."
     )
 
+    # Attempt to synthesize a short farmer-friendly summary using LLM (non-blocking)
+    llm_summary = None
+    try:
+        prompt_lines = [
+            f"Disease: {predicted_class}",
+            f"Pathogen: {db.get('pathogen') or 'N/A'}",
+            f"Severity: {db.get('severity')}",
+            f"Confidence: {confidence:.2f}",
+            "Visual cues:",
+        ]
+        prompt_lines += [f"- {r}" for r in regs]
+        prompt_lines += ["\nRecommended treatment steps:"]
+        prompt_lines += [f"- {s}" for s in db.get('treatment', [])[:4]]
+        prompt_lines += ["\nProvide a short (3-bullet) farmer-friendly action plan: immediate action, follow-up, and prevention. Use plain language."]
+        prompt = "\n".join(prompt_lines)
+        llm_summary = llm_generate_text(prompt, max_tokens=180)
+    except Exception:
+        llm_summary = None
+
     return ChatbotResponse(
         disease            = predicted_class,
         pathogen           = db["pathogen"],
@@ -304,6 +331,7 @@ def generate_recommendation(
         environmental_note = db["environmental"],
         xai_explanation    = "\n".join(xai_parts),
         literature         = db.get("literature", []),
+        llm_summary        = llm_summary,
     )
 
 

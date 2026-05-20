@@ -6,10 +6,15 @@
     <meta name="description" content="Dragon Fruit AI Suite - Disease Diagnosis and Quality Grading">
     <title>{% block title %}Dragon Fruit AI Suite{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Temporarily disabled to restore original theme while we fix enhancements -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style_enhancements.css') }}"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='localization.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
-<canvas id="particles-canvas"></canvas>
+<canvas id="particles-canvas" style="position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.6;"></canvas>
 
 <nav class="top-nav">
     <div class="top-nav-inner">
@@ -19,9 +24,15 @@
             <a href="{{ url_for('quality_page') }}" class="{% if request.endpoint in ['quality_page', 'predict_quality'] %}active{% endif %}">Quality Grading</a>
             <a href="{{ url_for('detect_page') }}" class="{% if request.endpoint in ['detect_page', 'predict_detect'] %}active{% endif %}">Lesion Detector</a>
             <a href="{{ url_for('camera_page') }}" class="{% if request.endpoint == 'camera_page' %}active{% endif %}"><i data-lucide="scan-line" style="width:14px;height:14px;vertical-align:middle;margin-right:2px;"></i> Live Scanner</a>
+            <a href="{{ url_for('vqa_page') }}" class="{% if request.endpoint in ['vqa_page', 'predict_vqa'] %}active{% endif %}"><i data-lucide="message-square" style="width:14px;height:14px;vertical-align:middle;margin-right:2px;"></i> VQA</a>
             {% if request.endpoint in ['predict_disease', 'predict_detect', 'camera_result'] %}
             <a href="#" class="active"><img src="/icons/medical-record-icon-report-vector-isolated-illustration-white-background-168809770.webp" alt="" class="nav-icon"> Prescription</a>
             {% endif %}
+            <button id="theme-toggle" class="btn btn-outline" style="padding: 0.4rem 0.7rem; border-radius: 99px; display: inline-flex; align-items: center; justify-content: center; margin-left: 0.5rem; background: transparent; cursor: pointer;" aria-label="Toggle Dark Mode">
+                <span id="theme-icon-moon" style="display: flex;"><i data-lucide="moon" style="width:16px;height:16px;"></i></span>
+                <span id="theme-icon-sun" style="display: none;"><i data-lucide="sun" style="width:16px;height:16px;"></i></span>
+            </button>
+            <!-- Enhance UI button removed as requested -->
         </div>
     </div>
 </nav>
@@ -63,22 +74,25 @@
     resize();
 
     const COLORS = [
-        'rgba(0, 0, 0, 0.25)',
-        'rgba(0, 0, 0, 0.15)',
-        'rgba(0, 0, 0, 0.10)',
-        'rgba(80, 80, 80, 0.20)',
-        'rgba(160, 160, 160, 0.15)'
+        'rgba(0, 0, 0, 0.12)',
+        'rgba(0, 0, 0, 0.09)',
+        'rgba(0, 0, 0, 0.07)'
     ];
 
     class Particle {
         constructor() { this.reset(true); }
         reset(init) {
-            this.x = Math.random() * W;
+            // bias particles to side gutters most of the time for less center clutter
+            if (Math.random() < 0.6) {
+                this.x = Math.random() < 0.5 ? Math.random() * 160 : W - Math.random() * 160;
+            } else {
+                this.x = Math.random() * W;
+            }
             this.y = init ? Math.random() * H : H + 20;
-            this.r = Math.random() * 3 + 1;
-            this.vy = -(Math.random() * 0.5 + 0.15);
-            this.vx = (Math.random() - 0.5) * 0.3;
-            this.alpha = Math.random() * 0.5 + 0.2;
+            this.r = Math.random() * 1.0 + 0.8;
+            this.vy = -(Math.random() * 0.15 + 0.02);
+            this.vx = (Math.random() - 0.5) * 0.12;
+            this.alpha = Math.random() * 0.18 + 0.04;
             this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
             this.pulse = Math.random() * Math.PI * 2;
         }
@@ -90,16 +104,22 @@
             if (this.y < -20 || this.x < -20 || this.x > W + 20) this.reset(false);
         }
         draw() {
+            const isDark = document.body.classList.contains('dark-mode');
             ctx.beginPath();
             ctx.arc(this.x, this.y, Math.max(this.currentR, 0.5), 0, Math.PI * 2);
-            ctx.fillStyle = this.color;
+            if (isDark) {
+                ctx.fillStyle = 'rgba(255, 255, 255, ' + (this.alpha * 0.6) + ')';
+            } else {
+                ctx.fillStyle = this.color;
+            }
             ctx.globalAlpha = this.alpha;
             ctx.fill();
             ctx.globalAlpha = 1;
         }
     }
 
-    for (let i = 0; i < 60; i++) particles.push(new Particle());
+    // Gentle particle field: moderate count, softer lines, side-biased distribution
+    for (let i = 0; i < 24; i++) particles.push(new Particle());
 
     function drawLines() {
         for (let i = 0; i < particles.length; i++) {
@@ -107,12 +127,18 @@
                 const dx = particles[i].x - particles[j].x;
                 const dy = particles[i].y - particles[j].y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 120) {
+                if (dist < 100) {
+                    const t = 1 - dist / 100;
+                    const isDark = document.body.classList.contains('dark-mode');
                     ctx.beginPath();
                     ctx.moveTo(particles[i].x, particles[i].y);
                     ctx.lineTo(particles[j].x, particles[j].y);
-                    ctx.strokeStyle = 'rgba(0, 0, 0, ' + (0.06 * (1 - dist / 120)) + ')';
-                    ctx.lineWidth = 0.5;
+                    if (isDark) {
+                        ctx.strokeStyle = 'rgba(255,255,255,' + (0.035 * t) + ')';
+                    } else {
+                        ctx.strokeStyle = 'rgba(0,0,0,' + (0.03 * t) + ')';
+                    }
+                    ctx.lineWidth = 0.22;
                     ctx.stroke();
                 }
             }
@@ -127,6 +153,40 @@
     }
     animate();
 })();
+</script>
+
+<script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const iconMoon = document.getElementById('theme-icon-moon');
+    const iconSun = document.getElementById('theme-icon-sun');
+    const b = document.body;
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        b.classList.add('dark-mode');
+        if(iconMoon && iconSun) {
+            iconMoon.style.display = 'none';
+            iconSun.style.display = 'flex';
+        }
+    }
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            b.classList.toggle('dark-mode');
+            if (b.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                iconMoon.style.display = 'none';
+                iconSun.style.display = 'flex';
+            } else {
+                localStorage.setItem('theme', 'light');
+                iconMoon.style.display = 'flex';
+                iconSun.style.display = 'none';
+            }
+        });
+    }
+
+    // Ensure any previously enabled enhanced-theme is cleared (cleanup)
+    try { localStorage.removeItem('enhancedUI'); document.body.classList.remove('enhanced-theme'); } catch(e){}
 </script>
 
 {% block scripts %}{% endblock %}

@@ -1,0 +1,117 @@
+<!-- ═══════════════════════════════════════════════════════════════════
+     AGROBOT VQA CHAT WIDGET
+     Uses the existing floating chat styles from style.css
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<button class="fab-chat" id="fabChat" onclick="toggleAgrobotChat()" title="Ask Agrobot">
+    <i data-lucide="message-circle" style="width:26px;height:26px;"></i>
+    <span class="fab-badge"></span>
+</button>
+
+<div class="chat-panel" id="chatPanel">
+    <div class="chat-panel-header">
+        <h3><i data-lucide="bot" style="width:18px;height:18px;"></i> Agrobot</h3>
+        <button class="chat-panel-close" onclick="toggleAgrobotChat()" aria-label="Close chat">
+            <i data-lucide="x" style="width:18px;height:18px;"></i>
+        </button>
+    </div>
+
+    <div class="chat-panel-body" id="chatBody"></div>
+
+    <div class="chat-panel-input">
+        <input type="text" id="chatInput" placeholder="Ask about treatment, prevention, or disease..." onkeypress="if(event.key==='Enter')sendChatMessage()">
+        <button onclick="sendChatMessage()">
+            <i data-lucide="send" style="width:16px;height:16px;"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+let conversationHistory = [];
+const predictionValue = "{{ prediction | default('Healthy') | replace('\\', '\\\\') | replace('"', '\\"') }}";
+const confidenceValue = Number("{{ confidence | default(1.0) }}") || 1.0;
+const agrobotContext = `The AI vision model just analyzed a dragon fruit image and detected ${predictionValue.replace(/_/g, ' ')} with ${(confidenceValue * 100).toFixed(2)}% confidence.`;
+
+function toggleAgrobotChat() {
+    const panel = document.getElementById('chatPanel');
+    const badge = document.querySelector('#fabChat .fab-badge');
+    panel.classList.toggle('open');
+    if (badge) badge.style.display = 'none';
+    if (panel.classList.contains('open')) {
+        scrollChatToBottom();
+    }
+}
+
+function scrollChatToBottom() {
+    const body = document.getElementById('chatBody');
+    if (body) body.scrollTop = body.scrollHeight;
+}
+
+function appendChatBubble(text, sender, loading = false) {
+    const body = document.getElementById('chatBody');
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${sender}${loading ? ' typing' : ''}`;
+    bubble.textContent = text;
+    const bubbleId = `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    bubble.id = bubbleId;
+    body.appendChild(bubble);
+    scrollChatToBottom();
+    return bubbleId;
+}
+
+function renderGreeting() {
+    const body = document.getElementById('chatBody');
+    if (!body || body.children.length) return;
+    const greeting = `Analysis complete. I am currently reviewing the results for ${predictionValue.replace(/_/g, ' ')}. Ask me anything about treatments, fungicides, or crop management.`;
+    appendChatBubble(greeting, 'bot');
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if (!message) return;
+
+    appendChatBubble(message, 'user');
+    input.value = '';
+
+    const loadingId = appendChatBubble('Processing...', 'bot', true);
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message,
+                context: agrobotContext,
+                history: conversationHistory,
+                disease: predictionValue,
+                confidence: confidenceValue
+            })
+        });
+
+        const data = await response.json();
+        const loadingNode = document.getElementById(loadingId);
+        if (loadingNode) {
+            loadingNode.classList.remove('typing');
+            loadingNode.textContent = data.reply || 'No reply received.';
+        }
+
+        if (data.success && Array.isArray(data.history)) {
+            conversationHistory = data.history;
+        }
+    } catch (error) {
+        const loadingNode = document.getElementById(loadingId);
+        if (loadingNode) {
+            loadingNode.classList.remove('typing');
+            loadingNode.textContent = 'System fault. Please try again.';
+        }
+    }
+
+    scrollChatToBottom();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderGreeting();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+});
+</script>

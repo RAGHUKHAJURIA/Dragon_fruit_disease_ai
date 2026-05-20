@@ -1,0 +1,9 @@
+{
+  "vocab_size": 102,
+  "vision_feat_dim": 768,
+  "num_answers": 32,
+  "best_val_acc": 0.967027027027027,
+  "epochs_trained": 11,
+  "lr": 0.001,
+  "batch_size": 32
+}

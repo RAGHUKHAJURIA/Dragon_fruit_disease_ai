@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 from models.convitx import build_convitx_base
+from models.convitx_pretrained import build_convitx_pretrained
 
 IMG_SIZE = 224
 DEVICE   = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -27,6 +28,45 @@ infer_transforms = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
 ])
+
+# TTA augmentation set — same as evaluate_tta.py (6 passes → +1% accuracy)
+_TTA_TRANSFORMS = [
+    transforms.Compose([  # original
+        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]),
+    transforms.Compose([  # H-flip
+        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.RandomHorizontalFlip(p=1.0),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]),
+    transforms.Compose([  # V-flip
+        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.RandomVerticalFlip(p=1.0),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]),
+    transforms.Compose([  # 90°
+        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.RandomRotation((90, 90)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]),
+    transforms.Compose([  # 180°
+        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.RandomRotation((180, 180)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]),
+    transforms.Compose([  # 270°
+        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.RandomRotation((270, 270)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]),
+]
 
 # ─── GRAD-CAM ────────────────────────────────────────────────────────────────
 class GradCAM:
@@ -78,7 +118,7 @@ class GradCAM:
         # Pool gradients across channels
         weights  = self.gradients.mean(dim=[2, 3], keepdim=True)  # [1, C, 1, 1]
         cam      = (weights * self.activations).sum(dim=1).squeeze()  # [H, W]
-        cam      = F.relu(torch.tensor(cam)).numpy()
+        cam      = F.relu(cam).detach().cpu().numpy()
 
         # Normalize to [0, 1]
         cam = (cam - cam.min()) / (cam.max() - cam.min() + 1e-8)
@@ -125,9 +165,14 @@ def run_gradcam(
     image_path:   str,
     class_names:  list,
     save_path:    str = None,
+    use_tta:      bool = True,
 ) -> dict:
     """
-    End-to-end Grad-CAM pipeline.
+    End-to-end Grad-CAM pipeline with optional TTA for better accuracy.
+
+    TTA (Test-Time Augmentation) averages predictions over 6 augmented views
+    before selecting the final class — same technique that boosted accuracy
+    from 94.62% to 95.76% in evaluation.
 
     Returns dict with:
         predicted_class (str)
@@ -135,17 +180,36 @@ def run_gradcam(
         probabilities   (dict {class_name: prob})
         heatmap         (np.ndarray)
         overlay         (np.ndarray, RGB)
+        low_confidence  (bool)  — True if model is uncertain (<50%)
     """
-    # Load & preprocess image
-    pil_img    = Image.open(image_path).convert("RGB")
-    orig_np    = np.array(pil_img)
+    pil_img = Image.open(image_path).convert("RGB")
+    orig_np = np.array(pil_img)
+
+    # ── TTA: average probabilities over 6 augmented views ────────────────
+    if use_tta:
+        all_probs = []
+        for tf in _TTA_TRANSFORMS:
+            t = tf(pil_img).unsqueeze(0).to(DEVICE)
+            with torch.no_grad():
+                logits = model(t)
+                p = F.softmax(logits, dim=1).squeeze(0).cpu().numpy()
+            all_probs.append(p)
+        probs    = np.stack(all_probs, axis=0).mean(axis=0)   # avg over 6 passes
+        pred_idx = int(np.argmax(probs))
+    else:
+        tensor_img = infer_transforms(pil_img).unsqueeze(0)
+        with torch.no_grad():
+            logits = model(tensor_img.to(DEVICE))
+            probs  = F.softmax(logits, dim=1).squeeze(0).cpu().numpy()
+        pred_idx = int(np.argmax(probs))
+
+    # ── Grad-CAM heatmap (single pass on original image) ─────────────────
     tensor_img = infer_transforms(pil_img).unsqueeze(0)
+    gradcam    = GradCAM(model, target_layer)
+    heatmap, _, _ = gradcam.generate(tensor_img, class_idx=pred_idx)
+    overlay    = overlay_heatmap(orig_np, heatmap)
 
-    # Run Grad-CAM
-    gradcam = GradCAM(model, target_layer)
-    heatmap, pred_idx, probs = gradcam.generate(tensor_img)
-
-    overlay = overlay_heatmap(orig_np, heatmap)
+    low_confidence = float(probs[pred_idx]) < 0.50
 
     result = {
         "predicted_class": class_names[pred_idx],
@@ -153,20 +217,22 @@ def run_gradcam(
         "probabilities":   {c: float(p) for c, p in zip(class_names, probs)},
         "heatmap":         heatmap,
         "overlay":         overlay,
+        "low_confidence":  low_confidence,
     }
 
     # Visualise
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     axes[0].imshow(orig_np);   axes[0].set_title("Original Image");        axes[0].axis("off")
     axes[1].imshow(heatmap, cmap="jet"); axes[1].set_title("Grad-CAM Map"); axes[1].axis("off")
-    axes[2].imshow(overlay);  axes[2].set_title(
-        f"Overlay\n{result['predicted_class']} ({result['confidence']:.1%})"
-    ); axes[2].axis("off")
+    conf_label = f"{result['predicted_class']} ({result['confidence']:.1%})"
+    if low_confidence:
+        conf_label += "\n⚠ Low confidence"
+    axes[2].imshow(overlay);  axes[2].set_title(f"Overlay\n{conf_label}"); axes[2].axis("off")
     plt.tight_layout()
 
     if save_path:
         plt.savefig(save_path, dpi=150)
-    plt.close(fig)  # free memory, no blocking popup
+    plt.close(fig)
 
     return result
 
@@ -180,8 +246,22 @@ def get_target_layer_efficientnet(model) -> torch.nn.Module:
 
 
 def get_target_layer_convitx(model) -> torch.nn.Module:
-    """Returns the fusion convolutional layer for ConViTX Grad-CAM hooks."""
-    return model.fusion_conv[0]
+    """Returns an architecture-aware target layer for ConViTX Grad-CAM hooks."""
+    # Old ConViTX (scratch-trained) has fusion_conv
+    if hasattr(model, "fusion_conv"):
+        return model.fusion_conv[0]
+
+    # ConViTXPretrained — use the second-to-last block of MobileNetV3 features
+    # (avoids the final Hardswish-only block which has no spatial gradients)
+    if hasattr(model, "cnn_branch"):
+        # MobileNetV3-Small: features[12] is the last InvertedResidual block
+        # that has meaningful spatial gradients for Grad-CAM
+        try:
+            return model.cnn_branch[12]   # Last InvertedResidual in MobileNetV3-Small
+        except (IndexError, TypeError):
+            return model.cnn_branch[-2]   # fallback: second-to-last
+
+    raise AttributeError("Unsupported ConViTX architecture: missing Grad-CAM target layer")
 
 
 
@@ -192,12 +272,25 @@ def load_convitx_model(
     num_classes: int = 6,
     device: torch.device = DEVICE,
 ) -> torch.nn.Module:
-    """Load ConViTXBase checkpoint under edge parameter budget."""
-    model = build_convitx_base(num_classes=num_classes, enforce_budget=False)
+    """Load ConViTX checkpoint, auto-selecting architecture from checkpoint keys."""
     try:
         state = torch.load(model_path, map_location=device, weights_only=True)
     except Exception:
         state = torch.load(model_path, map_location=device, weights_only=False)
+
+    if isinstance(state, dict) and "state_dict" in state:
+        state = state["state_dict"]
+
+    if not isinstance(state, dict):
+        raise ValueError(f"Unsupported checkpoint format in: {model_path}")
+
+    # Pretrained ConViTX uses a sequential head (head.0/head.3) and no fusion_conv.
+    is_pretrained_convitx = any(k.startswith("head.0") for k in state.keys())
+    if is_pretrained_convitx:
+        model = build_convitx_pretrained(num_classes=num_classes)
+    else:
+        model = build_convitx_base(num_classes=num_classes, enforce_budget=False)
+
     model.load_state_dict(state)
     model.eval().to(device)
     return model

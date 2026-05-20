@@ -1,0 +1,15 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Agrobot Localization — Noto Sans Indic Font Support
+   ═══════════════════════════════════════════════════════════════════ */
+
+.agrobot-bubble, .chat-panel-body, .chat-bubble {
+    font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Kannada', 'Noto Sans Tamil', 'Noto Sans Malayalam', 'Noto Sans Bengali', sans-serif;
+    line-height: 1.6;
+}
+
+.chat-bubble.bot p {
+    margin: 0 0 0.5rem 0;
+}
+.chat-bubble.bot p:last-child {
+    margin-bottom: 0;
+}

@@ -1,41 +1,71 @@
 {% extends 'base.html' %}
 {% block title %}Dragon Fruit AI Suite{% endblock %}
-
 {% block content %}
-<header class="app-header">
-    <h1>Dual-Stream Dragon Fruit AI</h1>
-    <p>Choose between disease diagnostics with Grad-CAM explainability or market-focused quality grading.</p>
+<header class="app-header" style="padding-bottom:1rem;">
+    <h1>Dragon Fruit AI Suite</h1>
+    <p>End-to-end disease diagnosis, lesion detection, and market quality grading powered by deep learning.</p>
 </header>
 
-<div class="glass-container" style="max-width: 1100px; margin: 0 auto;">
+<!-- Stats removed as requested -->
+
+<div class="glass-container" style="max-width:1060px; margin:0 auto;">
+    <p style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.9rem;">Choose a Tool</p>
+
     <div class="mode-grid">
         <a class="mode-card" href="{{ url_for('disease_page') }}">
-            <span class="badge" style="width: fit-content;">Disease Advisory</span>
-            <div class="mode-title">Disease Lab</div>
-            <p class="mode-subtext">Classify 6 disease/health classes and visualize infected regions with Grad-CAM.</p>
-            <span class="btn btn-outline" style="width: fit-content;">Open Disease Tool</span>
+            <div>
+                <div class="mode-title">Disease Lab</div>
+                <p class="mode-subtext">Classify disease and visualize infected regions with Grad-CAM heatmaps.</p>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto;">
+                <!-- tech label removed -->
+                <span class="btn btn-outline" style="padding:0.4rem 1rem; font-size:0.82rem;">Open →</span>
+            </div>
         </a>
 
         <a class="mode-card" href="{{ url_for('quality_page') }}">
-            <span class="badge" style="width: fit-content;">Quality Grading</span>
-            <div class="mode-title">Market Value Grader</div>
-            <p class="mode-subtext">Grade fruit quality and get market recommendation for export or local processing.</p>
-            <span class="btn btn-outline" style="width: fit-content;">Open Quality Tool</span>
+            <div>
+                <div class="mode-title">Market Value Grader</div>
+                <p class="mode-subtext">Grade fruit quality and get a market recommendation for export or local processing.</p>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto;">
+                <!-- tech label removed -->
+                <span class="btn btn-outline" style="padding:0.4rem 1rem; font-size:0.82rem;">Open →</span>
+            </div>
         </a>
 
         <a class="mode-card" href="{{ url_for('detect_page') }}">
-            <span class="badge" style="width: fit-content;">Object Detection</span>
-            <div class="mode-title">Lesion Detector</div>
-            <p class="mode-subtext">Locate and count individual disease lesions with YOLOv8 bounding-box annotations and severity scoring.</p>
-            <span class="btn btn-outline" style="width: fit-content;">Open Lesion Detector</span>
+            <div>
+                <div class="mode-title">Lesion Detector</div>
+                <p class="mode-subtext">Locate and count disease lesions with bounding-box annotations and severity scoring.</p>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto;">
+                <!-- tech label removed -->
+                <span class="btn btn-outline" style="padding:0.4rem 1rem; font-size:0.82rem;">Open →</span>
+            </div>
         </a>
 
-        <a class="mode-card" href="{{ url_for('camera_page') }}" style="border-color:#2e7d32; border-style:dashed;">
-            <span class="badge" style="width: fit-content; background:#2e7d32;">Live Scanner</span>
-            <div class="mode-title">Guided Field Camera</div>
-            <p class="mode-subtext">Point your camera at the plant. AI-powered blur detection, distance guidance, and flash control for optimal field diagnosis.</p>
-            <span class="btn btn-outline" style="width: fit-content;">Open Live Scanner</span>
+        <a class="mode-card" href="{{ url_for('vqa_page') }}">
+            <div>
+                <div class="mode-title">Ask the AI</div>
+                <p class="mode-subtext">Upload an image and ask a question about disease, treatment, or prevention.</p>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto;">
+                <!-- tech label removed -->
+                <span class="btn btn-outline" style="padding:0.4rem 1rem; font-size:0.82rem;">Open →</span>
+            </div>
         </a>
+
+        <a class="mode-card" href="{{ url_for('camera_page') }}" style="border-style:dashed;">
+            <div style="flex:1;">
+                <div class="mode-title">Guided Field Camera</div>
+                <p class="mode-subtext" style="margin:0;">Point your device camera at the plant. AI-powered blur detection, distance guidance, and flash control for optimal field diagnosis. Supports Disease Lab and Lesion Detector modes.</p>
+            </div>
+            <span class="btn btn-outline" style="padding:0.4rem 1rem; font-size:0.82rem; flex-shrink:0;">Open Live Scanner →</span>
+        </a>
+
     </div>
 </div>
+
+<!-- Pipeline overview removed as requested -->
 {% endblock %}

@@ -13,7 +13,7 @@
 
     <div class="diagnosis-banner">
         <div class="diagnosis-icon {{ 'healthy' if prediction == 'Healthy' else 'diseased' }}">
-            {{ '🌿' if prediction == 'Healthy' else '🦠' }}
+            <i data-lucide="{{ 'leaf' if prediction == 'Healthy' else 'bug' }}"></i>
         </div>
         <div class="diagnosis-info">
             <h2>{{ prediction.replace('_', ' ') }}</h2>
@@ -43,7 +43,7 @@
 
     <div class="card" style="margin-top: 1.4rem;">
         <div class="card-header">
-            <div class="icon icon-result">📊</div>
+            <div class="icon icon-result"><i data-lucide="bar-chart-3"></i></div>
             <h2>Class Probabilities</h2>
         </div>
         <div class="prob-bar-group">

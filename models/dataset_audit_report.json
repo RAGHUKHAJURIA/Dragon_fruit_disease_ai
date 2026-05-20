@@ -1,0 +1,97 @@
+{
+  "target_classes": [
+    "Anthracnose",
+    "Brown_Stem_Spot",
+    "Gray_Blight",
+    "Healthy",
+    "Soft_Rot",
+    "Stem_Canker"
+  ],
+  "summaries": [
+    {
+      "path": "C:\\Users\\prith\\Desktop\\My Projects\\Mini_Project\\Dragon-fruit Disease\\mini-project\\dragonfruit_disease_ai\\dataset\\Dragon fruit & leaf Dataset from Bangladesh for Classification and Ecological Research",
+      "kind": "directory",
+      "exists": true,
+      "total_images": 15521,
+      "discovered_classes": {
+        "Bad fruit": 1228,
+        "Bad leaf": 6449,
+        "Good fruit": 1332,
+        "Good leaf": 6512
+      },
+      "mapped_target_counts": {
+        "Healthy": 7844,
+        "Anthracnose": 0,
+        "Brown_Stem_Spot": 0,
+        "Gray_Blight": 0,
+        "Soft_Rot": 0,
+        "Stem_Canker": 0
+      },
+      "unmapped_classes": {
+        "Bad fruit": 1228,
+        "Bad leaf": 6449
+      },
+      "coarse_only": true,
+      "notes": [
+        "Some classes are unmapped; manual mapping/annotation is required before supervised 6-class training.",
+        "Contains coarse labels (e.g., Fruit/Leaf/Bad/Good) that are not disease-specific.",
+        "Found 1 zip file(s) and included their class counts."
+      ]
+    },
+    {
+      "path": "C:\\Users\\prith\\Desktop\\My Projects\\Mini_Project\\Dragon-fruit Disease\\mini-project\\dragonfruit_disease_ai\\dataset\\archive",
+      "kind": "directory",
+      "exists": true,
+      "total_images": 3505,
+      "discovered_classes": {
+        "Fruit": 1128,
+        "Leaf": 2377
+      },
+      "mapped_target_counts": {
+        "Anthracnose": 0,
+        "Brown_Stem_Spot": 0,
+        "Gray_Blight": 0,
+        "Healthy": 0,
+        "Soft_Rot": 0,
+        "Stem_Canker": 0
+      },
+      "unmapped_classes": {
+        "Fruit": 1128,
+        "Leaf": 2377
+      },
+      "coarse_only": true,
+      "notes": [
+        "Some classes are unmapped; manual mapping/annotation is required before supervised 6-class training.",
+        "Contains coarse labels (e.g., Fruit/Leaf/Bad/Good) that are not disease-specific."
+      ]
+    },
+    {
+      "path": "C:\\Users\\prith\\Desktop\\My Projects\\Mini_Project\\Dragon-fruit Disease\\mini-project\\dragonfruit_disease_ai\\dataset\\Dragon Fruit Stem Disease An Annotated High-Resolution Image Dataset for Classification and Segmentation",
+      "kind": "directory",
+      "exists": true,
+      "total_images": 0,
+      "discovered_classes": {},
+      "mapped_target_counts": {
+        "Anthracnose": 0,
+        "Brown_Stem_Spot": 0,
+        "Gray_Blight": 0,
+        "Healthy": 0,
+        "Soft_Rot": 0,
+        "Stem_Canker": 0
+      },
+      "unmapped_classes": {},
+      "coarse_only": false,
+      "notes": [
+        "No image-folder class structure found."
+      ]
+    }
+  ],
+  "combined_mapped_counts": {
+    "Anthracnose": 0,
+    "Brown_Stem_Spot": 0,
+    "Gray_Blight": 0,
+    "Healthy": 7844,
+    "Soft_Rot": 0,
+    "Stem_Canker": 0
+  }
+}

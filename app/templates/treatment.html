@@ -10,9 +10,9 @@
 <div class="rx-header" id="rxHeader">
     <div class="rx-header-icon {{ 'healthy' if prediction == 'Healthy' else 'diseased' }}">
         {% if prediction == 'Healthy' %}
-            <img src="/icons/8645362.png" alt="Healthy" class="rx-icon-img-lg">
+            <i data-lucide="leaf" class="rx-header-glyph"></i>
         {% else %}
-            <img src="/icons/1730090.png" alt="Analysis" class="rx-icon-img-lg">
+            <i data-lucide="bug" class="rx-header-glyph"></i>
         {% endif %}
     </div>
     <div class="rx-header-body">
@@ -50,25 +50,25 @@
 
 <!-- ── 2. Visual Evidence ─────────────────────────────────────────── -->
 <div class="rx-section-title">
-    <span class="rx-section-icon"><img src="/icons/1730090.png" alt="" class="rx-icon-img"></span>
+    <span class="rx-section-icon"><i data-lucide="scan-search" class="rx-section-glyph"></i></span>
     Visual Evidence — Why the AI Flagged This
 </div>
 <div class="rx-evidence-grid">
     <div class="rx-evidence-card">
-        <img src="{{ img_url }}" alt="Original uploaded image" id="rxOriginalImg">
-        <div class="rx-evidence-label"><img src="/icons/563d0201e4359c2e890569e254ea14790eb370b71d08b6de5052511cc0352313.jpg" alt="" class="rx-icon-img-sm"> Original Input</div>
+        <img src="{{ img_url }}" alt="Original input" id="rxOriginalImg">
+        <div class="rx-evidence-label"><i data-lucide="image" class="rx-label-glyph"></i> Original Input</div>
     </div>
     <div class="rx-evidence-card">
         {% if mode == 'disease' %}
             <img src="{{ cam_url }}" alt="Grad-CAM heatmap overlay" id="rxOverlayImg">
-            <div class="rx-evidence-label"><i data-lucide="flame" style="width:16px;height:16px;"></i> Grad-CAM Heatmap — Infected regions highlighted</div>
+            <div class="rx-evidence-label"><i data-lucide="flame" class="rx-label-glyph"></i> Grad-CAM Heatmap — Infected regions highlighted</div>
         {% elif mode == 'detect' %}
             {% if total_lesions > 0 %}
                 <img src="{{ annotated_url }}" alt="YOLOv8 annotated lesions" id="rxOverlayImg">
-                <div class="rx-evidence-label"><i data-lucide="crosshair" style="width:16px;height:16px;"></i> YOLOv8 Annotations — {{ total_lesions }} lesion{{ 's' if total_lesions != 1 else '' }} located</div>
+                <div class="rx-evidence-label"><i data-lucide="crosshair" class="rx-label-glyph"></i> YOLOv8 Annotations — {{ total_lesions }} lesion{{ 's' if total_lesions != 1 else '' }} located</div>
             {% else %}
                 <img src="{{ img_url }}" alt="No lesions found" id="rxOverlayImg">
-                <div class="rx-evidence-label"><i data-lucide="check-circle" style="width:16px;height:16px;"></i> No lesions found — fruit appears healthy</div>
+                <div class="rx-evidence-label"><i data-lucide="check-circle" class="rx-label-glyph"></i> No lesions found — fruit appears healthy</div>
             {% endif %}
         {% endif %}
     </div>
@@ -164,50 +164,7 @@
 </div>
 {% endif %}
 
-<!-- ── 8. Environmental Conditions ─────────────────────────────────── -->
-{% if advisory and advisory.environmental_note %}
-<div class="rx-section-title">
-    <span class="rx-section-icon"><i data-lucide="cloud-sun" style="width:20px;height:20px;"></i></span>
-    Environmental Conditions
-</div>
-<div class="rx-env-card">
-    <span class="rx-env-icon"><img src="/icons/pngtree-flat-temperature-icon-download-image_1148255.jpg" alt="" class="rx-icon-img-lg"></span>
-    <div class="rx-env-text">{{ advisory.environmental_note }}</div>
-</div>
-{% endif %}
 
-<!-- ── 9. XAI Explanation ─────────────────────────────────────────── -->
-{% if advisory and advisory.xai_explanation %}
-<div class="rx-section-title">
-    <span class="rx-section-icon"><i data-lucide="brain" style="width:20px;height:20px;"></i></span>
-    What the AI Sees (XAI Explanation)
-</div>
-<div class="rx-env-card" style="border-left: 4px solid #111;">
-    <span class="rx-env-icon"><img src="/icons/1730090.png" alt="" class="rx-icon-img-lg"></span>
-    <div class="rx-env-text" style="white-space: pre-line;">{{ advisory.xai_explanation }}</div>
-</div>
-{% endif %}
-
-<!-- ── 10. Scientific References (Accordion) ──────────────────────── -->
-{% if advisory and advisory.literature %}
-<div class="rx-section-title">
-    <span class="rx-section-icon"><i data-lucide="book-open" style="width:20px;height:20px;"></i></span>
-    Scientific References (2024–2025)
-</div>
-<div class="rx-accordion" id="rxLitAccordion">
-    <button class="rx-accordion-header" onclick="toggleAccordion('rxLitAccordion')">
-        <span><i data-lucide="file-text" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i> {{ advisory.literature|length }} peer-reviewed source{{ 's' if advisory.literature|length > 1 else '' }}</span>
-        <span class="rx-accordion-arrow">&#9660;</span>
-    </button>
-    <div class="rx-accordion-body">
-        <div class="rx-accordion-inner">
-            {% for ref in advisory.literature %}
-            <div class="rx-lit-item">{{ ref }}</div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endif %}
 
 <!-- ── 11. YOLO Raw Detections Table (Accordion — detect mode only) ── -->
 {% if mode == 'detect' and detections %}
@@ -302,42 +259,9 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     ASK AGROBOT — Floating Chat Button + Panel
+     ASK AGROBOT — Floating Chat Widget
      ═══════════════════════════════════════════════════════════════════ -->
-
-<!-- FAB Button -->
-<button class="fab-chat" id="fabChat" onclick="toggleChat()" title="Ask Agrobot">
-    <i data-lucide="message-circle" style="width:26px;height:26px;"></i>
-    <span class="fab-badge"></span>
-</button>
-
-<!-- Chat Panel -->
-<div class="chat-panel" id="chatPanel">
-    <div class="chat-panel-header">
-        <h3><i data-lucide="bot" style="width:18px;height:18px;"></i> Agrobot Assistant</h3>
-        <button class="chat-panel-close" onclick="toggleChat()"><i data-lucide="x" style="width:18px;height:18px;"></i></button>
-    </div>
-    <div class="chat-panel-body" id="chatBody">
-        <div class="chat-bubble bot">
-            Hi! I'm Agrobot, your agricultural assistant.
-        </div>
-        <div class="chat-bubble bot">
-            I can see you're looking at a <strong>{{ prediction.replace('_', ' ') }}</strong> diagnosis
-            with <strong>{{ '%.0f'|format(confidence * 100) }}%</strong> confidence.
-            {% if advisory and advisory.severity != 'None' %}
-            The severity level is <strong>{{ advisory.severity }}</strong>.
-            {% endif %}
-        </div>
-        <div class="chat-bubble bot">
-            Ask me anything about this disease, its treatment, or prevention measures!
-        </div>
-    </div>
-    <div class="chat-panel-input">
-        <input type="text" id="chatInput" placeholder="Ask about this diagnosis..."
-               onkeypress="if(event.key==='Enter')sendChatMessage()">
-        <button onclick="sendChatMessage()"><i data-lucide="send" style="width:16px;height:16px;"></i></button>
-    </div>
-</div>
+{% include 'vqa_widget.html' %}
 
 {% endblock %}
 
@@ -352,56 +276,7 @@ function toggleAccordion(id) {
     el.classList.toggle('open');
 }
 
-/* ── Chat Panel Toggle ────────────────────────────────────────────── */
-function toggleChat() {
-    const panel = document.getElementById('chatPanel');
-    const fab   = document.getElementById('fabChat');
-    panel.classList.toggle('open');
-
-    // Hide badge after first open
-    const badge = fab.querySelector('.fab-badge');
-    if (badge) badge.style.display = 'none';
-}
-
-/* ── Chat Message (Placeholder — connects to your friend's API later) */
-function sendChatMessage() {
-    const input = document.getElementById('chatInput');
-    const body  = document.getElementById('chatBody');
-    const text  = input.value.trim();
-    if (!text) return;
-
-    // User bubble
-    const userBubble = document.createElement('div');
-    userBubble.className = 'chat-bubble user';
-    userBubble.textContent = text;
-    body.appendChild(userBubble);
-
-    input.value = '';
-    body.scrollTop = body.scrollHeight;
-
-    // Simulated bot response (placeholder)
-    setTimeout(() => {
-        const botBubble = document.createElement('div');
-        botBubble.className = 'chat-bubble bot';
-
-        // Context-aware placeholder responses
-        const disease = '{{ prediction }}';
-        const responses = {
-            'Anthracnose': `For Anthracnose, I recommend applying Prochloraz (500 ppm) as your primary fungicide. Would you like specific dosage calculations for your orchard size?`,
-            'Stem_Canker': `Stem Canker requires immediate pruning of infected cladodes. Apply 5% amino-oligosaccharide solution to cut surfaces. Shall I explain the application process?`,
-            'Soft_Rot': `Soft Rot is bacterial — stop watering immediately and remove all infected tissue. Copper hydroxide (77%) is your best bactericide. Need application details?`,
-            'Brown_Stem_Spot': `Brown Stem Spot responds well to propiconazole (0.1%) or difenoconazole. Apply at 14-day intervals. Want me to explain the spray schedule?`,
-            'Gray_Blight': `Gray Blight is often secondary — check for wounds or storm damage first. Apply mancozeb (0.25%) and improve canopy airflow. Any questions about pruning techniques?`,
-            'Healthy': `Your plant looks healthy! Keep up the routine monitoring. Would you like tips on preventive care or optimal growing conditions?`,
-        };
-
-        botBubble.innerHTML = responses[disease] ||
-            `Thank you for your question about "${text}". The Knowledge Agent is being integrated by your team. Once connected, I'll provide detailed, AI-powered answers specific to your diagnosis.`;
-
-        body.appendChild(botBubble);
-        body.scrollTop = body.scrollHeight;
-    }, 800);
-}
+/* ── Chat functionality is now handled by vqa_widget.html ─────── */
 
 /* ── Auto-scroll chat on load ─────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {

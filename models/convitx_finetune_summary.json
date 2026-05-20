@@ -1,0 +1,50 @@
+{
+  "model": "ConViTX-large",
+  "params_trainable": 1213166,
+  "params_total": 1213166,
+  "seed": 42,
+  "best_epoch": 41,
+  "best_val_acc": 46.21,
+  "best_val_f1": 0.4119,
+  "tta_val_acc": 45.52,
+  "tta_val_f1": 0.4068,
+  "per_class": {
+    "Anthracnose": {
+      "precision": 0.48484848484848486,
+      "recall": 0.6666666666666666,
+      "f1-score": 0.5614035087719298,
+      "support": 24.0
+    },
+    "Brown_Stem_Spot": {
+      "precision": 0.4,
+      "recall": 0.3333333333333333,
+      "f1-score": 0.36363636363636365,
+      "support": 24.0
+    },
+    "Gray_Blight": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 24.0
+    },
+    "Healthy": {
+      "precision": 0.5294117647058824,
+      "recall": 0.6666666666666666,
+      "f1-score": 0.5901639344262295,
+      "support": 27.0
+    },
+    "Soft_Rot": {
+      "precision": 1.0,
+      "recall": 0.3076923076923077,
+      "f1-score": 0.47058823529411764,
+      "support": 26.0
+    },
+    "Stem_Canker": {
+      "precision": 0.34,
+      "recall": 0.85,
+      "f1-score": 0.4857142857142857,
+      "support": 20.0
+    }
+  },
+  "ckpt_path": "C:\\Users\\prith\\Desktop\\My Projects\\Mini_Project\\Dragon-fruit Disease\\mini-project\\dragonfruit_disease_ai\\models\\best_convitx_finetuned.pth"
+}

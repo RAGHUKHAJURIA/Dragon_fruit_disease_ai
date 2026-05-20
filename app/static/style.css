@@ -41,7 +41,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Kannada', 'Noto Sans Tamil', 'Noto Sans Malayalam', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg-dark);
     color: var(--text-primary);
     line-height: 1.6;
@@ -164,7 +164,51 @@ body {
 .card-header .icon {
     width: 40px; height: 40px;
     display: flex; align-items: center; justify-content: center;
-    border-radius: 12px; font-size: 1.2rem;
+    border-radius: 12px; font-size: 18px; line-height: 1; flex-shrink: 0;
+    overflow: hidden;
+}
+.card-header .icon img,
+.card-header .icon svg,
+.card-header .icon i,
+.card-header .icon * {
+    max-width: 100%; max-height: 100%; width: auto; height: auto; display: block;
+}
+
+/* Nav / brand icons */
+.nav-icon, .brand-icon { width: 36px !important; height: 36px !important; overflow: hidden; }
+.nav-icon img, .brand-icon img { max-width: 100%; max-height: 100%; width: auto; height: auto; display:block; }
+
+/* RX header and diagnosis icon sizing */
+.rx-header-icon, .diagnosis-icon { width: 48px !important; height: 48px !important; overflow: hidden; display:flex; align-items:center; justify-content:center; }
+.rx-header-icon img, .rx-header-icon svg, .rx-header-icon i,
+.diagnosis-icon img, .diagnosis-icon svg, .diagnosis-icon i {
+    max-width: 100%; max-height: 100%; width: auto; height: auto; display:block;
+}
+
+/* Ensure any image placed inside an icon container is constrained
+   to the icon box to avoid overflowing large source images */
+.card-header .icon img,
+.icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Header icon should also constrain inner images to its bounds */
+.rx-header-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Section icon images sizing */
+.rx-section-icon img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    display: block;
 }
 
 .card-header .icon-upload    { background: rgba(0,0,0,0.06); }
@@ -206,6 +250,23 @@ body {
 
 .upload-preview.visible { display: block; }
 input[type="file"] { display: none; }
+
+/* Tighten spacing for the info chips used on the quality/disease side panel */
+.upload-info-panel .info-chip {
+    display: flex;
+    gap: 0.4rem;
+    align-items: flex-start;
+    margin: 0; /* no vertical spacing between items */
+    padding: 0;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+.upload-info-panel .info-chip .chip-icon {
+    width: 22px; height: 22px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.04); flex-shrink: 0; font-size: 0.78rem;
+}
+.upload-info-panel .info-chip strong { display: inline; font-weight:700; margin-right:0.35rem; }
 
 /* ── Buttons ───────────────────────────────────────────────────────── */
 .btn {
@@ -253,13 +314,20 @@ input[type="file"] { display: none; }
 }
 
 .diagnosis-icon {
-    width: 64px; height: 64px; border-radius: 16px;
+    width: 48px; height: 48px; border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 2rem; flex-shrink: 0;
+    font-size: 1.2rem; line-height: 1; flex-shrink: 0; overflow: hidden;
 }
 
 .diagnosis-icon.healthy  { background: rgba(0,0,0,0.06); }
 .diagnosis-icon.diseased { background: rgba(0,0,0,0.06); }
+
+.diagnosis-icon svg,
+.diagnosis-icon i {
+    width: 1.35rem;
+    height: 1.35rem;
+    display: block;
+}
 
 .diagnosis-info h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.25rem; }
 .diagnosis-info .conf { color: var(--text-secondary); font-size: 1rem; }
@@ -340,6 +408,33 @@ input[type="file"] { display: none; }
 
 @media (max-width: 768px) {
     .vision-grid-large { grid-template-columns: 1fr; }
+}
+
+/* Strong, last-resort overrides to prevent decorative icons from overflowing
+   Applied with high specificity to prevent other rules from causing layout breakage. */
+img[src^="/icons/"],
+.nav-icon,
+.brand-icon,
+.card-header .icon img,
+.icon img,
+.rx-header-icon img,
+.rx-section-icon img,
+.rx-icon-img,
+.rx-icon-img-sm,
+.rx-icon-img-lg,
+.rx-icon-img-xl {
+    max-width: 48px;
+    max-height: 48px;
+    object-fit: contain;
+    display: inline-block;
+}
+
+/* Allow larger images that are explicitly content (upload previews, heatmaps) */
+.upload-preview, .vision-card-large img, .rx-evidence-card img, img[id^="rxOverlayImg"], img[id^="rxOriginalImg"] {
+    max-width: 100% !important;
+    max-height: 600px !important;
+    width: auto !important;
+    height: auto !important;
 }
 
 /* ── Result Layout ─────────────────────────────────────────────────── */
@@ -524,11 +619,11 @@ input[type="file"] { display: none; }
 .top-nav-inner {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 0.9rem 1.5rem;
+    padding: 0.6rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    gap: 0.6rem;
 }
 
 .brand {
@@ -536,6 +631,7 @@ input[type="file"] { display: none; }
     text-decoration: none;
     font-weight: 800;
     letter-spacing: 0.2px;
+    white-space: nowrap;
 }
 
 .nav-links {
@@ -551,6 +647,10 @@ input[type="file"] { display: none; }
     border-radius: 999px;
     border: 1px solid transparent;
     transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
 }
 
 .nav-links a:hover,
@@ -669,18 +769,32 @@ input[type="file"] { display: none; }
     border-radius: 4px;
 }
 
-.nav-icon {
-    width: 18px; height: 18px;
-    vertical-align: middle;
-    margin-right: 4px;
-    object-fit: contain;
+/* Prevent oversized decorative icons from /icons/ appearing full-screen
+   Some templates include large SVG/PNG files in the icons/ folder; constrain
+   any image referencing that folder so it cannot overflow layout. */
+img[src^="/icons/"] {
+    max-width: 48px;
+    max-height: 48px;
 }
 
-.rx-icon-img {
-    width: 22px; height: 22px;
-    vertical-align: middle;
-    object-fit: contain;
-    flex-shrink: 0;
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem; /* slightly more spacing between links */
+}
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    padding: 0.45rem 0.9rem; /* unified padding */
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: var(--transition);
+    font-size: 0.92rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    white-space: nowrap;
 }
 
 .rx-icon-img-sm {
@@ -750,13 +864,20 @@ input[type="file"] { display: none; }
 }
 
 .rx-header-icon {
-    width: 72px; height: 72px;
-    border-radius: 18px;
+    width: 56px; height: 56px;
+    border-radius: 16px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 2.2rem;
+    font-size: 0;
     flex-shrink: 0;
     background: rgba(0,0,0,0.06);
     border: 2px solid rgba(0,0,0,0.12);
+}
+
+.rx-header-icon .rx-header-glyph {
+    width: 28px;
+    height: 28px;
+    display: block;
+    flex: 0 0 auto;
 }
 
 .rx-header-icon.healthy  { background: rgba(34,139,34,0.08); border-color: rgba(34,139,34,0.2); }
@@ -834,11 +955,18 @@ input[type="file"] { display: none; }
 }
 
 .rx-section-title .rx-section-icon {
-    width: 36px; height: 36px;
-    border-radius: 10px;
+    width: 40px; height: 40px;
+    border-radius: 11px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem;
+    font-size: 0;
     background: rgba(0,0,0,0.06);
+}
+
+.rx-section-icon .rx-section-glyph {
+    width: 20px;
+    height: 20px;
+    display: block;
+    flex: 0 0 auto;
 }
 
 /* ── Visual Evidence Grid ─────────────────────────────────────────── */
@@ -872,14 +1000,27 @@ input[type="file"] { display: none; }
 }
 
 .rx-evidence-label {
-    padding: 0.7rem 1rem;
-    font-size: 0.88rem;
+    padding: 0.8rem 1rem;
+    font-size: 0.92rem;
     font-weight: 600;
     color: var(--text-secondary);
     border-top: 1px solid rgba(0,0,0,0.08);
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.55rem;
+}
+
+.rx-evidence-label svg,
+.rx-evidence-label i {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.rx-evidence-label .rx-label-glyph {
+    width: 16px;
+    height: 16px;
+    display: block;
 }
 
 /* ── Quick Fix Banner ─────────────────────────────────────────────── */
@@ -1753,4 +1894,332 @@ input[type="file"] { display: none; }
     .camera-capture-btn::after {
         width: 46px; height: 46px;
     }
+}
+
+/* ── Chat Typing Indicator ────────────────────────────────────────── */
+.chat-bubble.bot.typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 0.9rem 1rem;
+    min-width: 50px;
+}
+
+.chat-bubble.bot.typing .dot {
+    width: 6px;
+    height: 6px;
+    background: #888;
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+.chat-bubble.bot.typing .dot:nth-child(1) { animation-delay: -0.32s; }
+.chat-bubble.bot.typing .dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typingBounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40%           { transform: translateY(-4px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VQA (Visual Question Answering) Page Styles
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Question Section ─────────────────────────────────────────────── */
+.vqa-question-section {
+    margin-top: 1.5rem;
+}
+
+.vqa-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.vqa-input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-xs);
+    font-size: 1rem;
+    font-family: inherit;
+    background: #fff;
+    color: var(--text-primary);
+    transition: var(--transition);
+    outline: none;
+}
+
+.vqa-input:focus {
+    border-color: #000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.vqa-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* ── Suggestion Chips ─────────────────────────────────────────────── */
+.vqa-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.vqa-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.vqa-chip:hover {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.4);
+    color: var(--text-primary);
+}
+
+.vqa-chip.active {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+
+/* ── Language Pills ───────────────────────────────────────────────── */
+.vqa-lang-section {
+    margin-top: 1.25rem;
+}
+
+.vqa-lang-pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.vqa-lang-pills input[type="radio"] {
+    display: none;
+}
+
+.vqa-lang-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: #fff;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.vqa-lang-pills input[type="radio"]:checked + .vqa-lang-pill {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+
+.vqa-lang-pill:hover {
+    border-color: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.04);
+}
+
+/* ── Result Grid ──────────────────────────────────────────────────── */
+.vqa-result-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.vqa-result-image img {
+    width: 100%;
+    border-radius: var(--radius-sm);
+    border: 2px solid #000;
+    object-fit: cover;
+}
+
+.vqa-result-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ── Question Echo ────────────────────────────────────────────────── */
+.vqa-question-echo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: var(--radius-xs);
+    border-left: 3px solid #000;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* ── Confidence Bar ───────────────────────────────────────────────── */
+.vqa-confidence-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.vqa-conf-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    width: 75px;
+    flex-shrink: 0;
+}
+
+.vqa-conf-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    width: 50px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* ── Answer Box ───────────────────────────────────────────────────── */
+.vqa-answer-box {
+    padding: 1.25rem 1.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: var(--radius-sm);
+    line-height: 1.7;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.vqa-answer-box p {
+    margin: 0;
+}
+
+/* ── Meta Tags ────────────────────────────────────────────────────── */
+.vqa-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* ── Camera VQA Input ─────────────────────────────────────────────── */
+.camera-vqa-input {
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-xs);
+    margin: 0.5rem 1rem;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .vqa-result-grid {
+        grid-template-columns: 1fr;
+    }
+    .vqa-result-image img {
+        max-height: 200px;
+        object-fit: contain;
+    }
+}
+
+/* ── Dark Mode ─────────────────────────────────────────────────────── */
+body.dark-mode {
+    --bg-dark:       #0a0a0a;
+    --bg-surface:    #121212;
+    --card-bg:       rgba(20, 20, 20, 0.85);
+    --card-bg-solid: #161616;
+    --border:        #333333;
+    --border-glow:   rgba(255, 255, 255, 0.15);
+    --text-primary:  #f5f5f5;
+    --text-secondary:#a0a0a0;
+    --text-muted:    #666666;
+    --warning:       #aaaaaa;
+    --danger:        #ff4444;
+    --danger-glow:   rgba(255, 68, 68, 0.15);
+    --gradient-main: linear-gradient(135deg, #222 0%, #111 100%);
+    --gradient-btn:  linear-gradient(135deg, #333 0%, #111 100%);
+    --gradient-bar:  linear-gradient(90deg, #333, #555);
+    --shadow:        0 4px 20px -4px rgba(0, 0, 0, 0.50);
+    --shadow-glow:   0 0 16px rgba(255, 255, 255, 0.08);
+}
+
+/* Override hardcoded dark mode elements */
+body.dark-mode .badge { background: #eee; color: #111; }
+body.dark-mode .badge-outline { color: #ccc; border-color: #777; }
+body.dark-mode .btn-primary { background: #eee; color: #111; }
+body.dark-mode .btn-outline { color: #eee; border-color: #666; }
+body.dark-mode .btn-outline:hover { background: rgba(255,255,255,0.1); }
+body.dark-mode .top-nav { background: rgba(10, 10, 10, 0.85); border-bottom-color: #333; }
+body.dark-mode .nav-links a:hover, body.dark-mode .nav-links a.active { color: #eee; border-color: #666; background: rgba(255,255,255,0.1); }
+body.dark-mode .upload-area:hover, body.dark-mode .upload-area.drag-over { border-color: #888; background: rgba(255,255,255,0.05); }
+body.dark-mode .diagnosis-info .conf strong { color: #eee; }
+body.dark-mode .severity-moderate { background: rgba(255,255,255,0.1); color: #ccc; }
+body.dark-mode .severity-high { background: rgba(255,255,255,0.15); color: #eee; }
+body.dark-mode .severity-veryhigh { background: rgba(255,255,255,0.2); color: #fff; }
+body.dark-mode .vision-card img, body.dark-mode .vision-card-large img { border-color: #444; }
+body.dark-mode .prob-item .bar-fill { background: #666; }
+body.dark-mode .prob-item .bar-fill.top { background: #eee; }
+body.dark-mode .advisor-box { border-left-color: #666; background: rgba(255,255,255,0.05); }
+body.dark-mode .treatment-list li::before { background: #eee; color: #111; border-color: #111; }
+body.dark-mode .tip-list li { border-left-color: #555; background: rgba(255,255,255,0.05); }
+body.dark-mode .tip-list li:hover { border-left-color: #888; background: rgba(255,255,255,0.1); }
+body.dark-mode .env-box { border-color: #444; background: rgba(255,255,255,0.05); }
+body.dark-mode .disease-mini-card .cues li::before { color: #eee; }
+body.dark-mode .flash-msg { color: #eee; border-color: #555; background: rgba(255,255,255,0.1); }
+body.dark-mode .mode-card { border-color: #444; background: #161616; }
+body.dark-mode .market-export, body.dark-mode .market-local, body.dark-mode .market-domestic { border-color: #666; color: #eee; background: rgba(255,255,255,0.1); }
+body.dark-mode .spinner { border-top-color: #eee; border-right-color: #888; }
+body.dark-mode .card-header .icon, body.dark-mode .diagnosis-icon { background: rgba(255,255,255,0.1); }
+body.dark-mode .rx-header-icon { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+body.dark-mode .app-header h1 { color: #eee; }
+body.dark-mode .rx-confidence { color: #eee; }
+body.dark-mode .rx-header { border-color: #444; background: rgba(30, 30, 30, 0.85); }
+
+/* Ensure card-like elements always follow theme variables (overrides inline whites) */
+.card,
+.glass-container,
+.mode-card,
+.disease-mini-card,
+.upload-info-panel,
+.upload-area,
+.mode-grid .disease-mini-card,
+.vqa-result-grid,
+.vqa-result-content {
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+}
+
+/* Ensure small headings inside those elements are visible */
+.card h2, .glass-container h2, .mode-title, .disease-mini-card h4 {
+    color: var(--text-primary) !important;
+}
+
+/* Ensure form inputs/selects are readable in dark mode */
+body.dark-mode .vqa-input,
+body.dark-mode select,
+body.dark-mode input[type="text"],
+body.dark-mode textarea {
+    background: var(--card-bg-solid) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+}
+
+/* Try to make native option text visible in dark mode where supported */
+body.dark-mode select option {
+    background: var(--card-bg-solid);
+    color: var(--text-primary);
 }
