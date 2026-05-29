@@ -1,9 +1,20 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Agrobot Localization — Noto Sans Indic Font Support
+   Agrobot Localization — Noto Sans Indic + Thai Font Support
    ═══════════════════════════════════════════════════════════════════ */
 
-.agrobot-bubble, .chat-panel-body, .chat-bubble {
-    font-family: 'Inter', 'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Kannada', 'Noto Sans Tamil', 'Noto Sans Malayalam', 'Noto Sans Bengali', sans-serif;
+/* Full multilingual font stack — covers all 10 supported languages */
+.agrobot-bubble, .chat-panel-body, .chat-bubble,
+#pdfReportTemplate, #rxLangSelect {
+    font-family:
+        'Noto Sans',
+        'Noto Sans Devanagari',
+        'Noto Sans Telugu',
+        'Noto Sans Kannada',
+        'Noto Sans Tamil',
+        'Noto Sans Malayalam',
+        'Noto Sans Bengali',
+        'Noto Sans Thai',
+        'Inter', sans-serif;
     line-height: 1.6;
 }
 
@@ -13,3 +24,23 @@
 .chat-bubble.bot p:last-child {
     margin-bottom: 0;
 }
+
+/* Language Switcher pill refinements */
+#rxLangBar {
+    font-family: 'Inter', 'Noto Sans', sans-serif;
+}
+
+#rxLangSelect {
+    font-family:
+        'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Kannada',
+        'Noto Sans Tamil', 'Noto Sans Malayalam', 'Noto Sans Bengali',
+        'Noto Sans Thai', 'Inter', 'Noto Sans', sans-serif;
+}
+
+/* PDF template off-screen isolation */
+#pdfReportTemplate {
+    /* Ensure the hidden template doesn't affect page layout */
+    visibility: visible; /* html2canvas needs visibility:visible */
+    pointer-events: none;
+}
+

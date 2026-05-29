@@ -48,6 +48,43 @@
     </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════
+     LANGUAGE SWITCHER — Floating Pill (Prescription Localizer)
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="rxLangBar" style="
+    display: flex; align-items: center; gap: 0.75rem;
+    background: var(--card-bg, rgba(255,255,255,0.06));
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    border-radius: 99px;
+    padding: 0.55rem 1.1rem;
+    margin: 0 0 1.5rem 0;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    flex-wrap: wrap;
+">
+    <span style="font-size:0.82rem; font-weight:600; color:var(--text-secondary, rgba(255,255,255,0.55)); white-space:nowrap; display:flex;align-items:center;gap:5px;">
+        <i data-lucide="globe" style="width:15px;height:15px;"></i> Prescription Language
+    </span>
+    <select id="rxLangSelect" style="
+        border: none; background: transparent; font-size:0.88rem;
+        color: var(--text-primary, #fff); cursor: pointer; font-weight: 600;
+        outline: none; padding: 0.1rem 0.3rem;
+    ">
+        <option value="en" style="background:var(--card-bg,#1e1b4b);">🇬🇧 English</option>
+        <option value="hi" style="background:var(--card-bg,#1e1b4b);">🇮🇳 हिन्दी</option>
+        <option value="te" style="background:var(--card-bg,#1e1b4b);">🇮🇳 తెలుగు</option>
+        <option value="kn" style="background:var(--card-bg,#1e1b4b);">🇮🇳 ಕನ್ನಡ</option>
+        <option value="ta" style="background:var(--card-bg,#1e1b4b);">🇮🇳 தமிழ்</option>
+        <option value="ml" style="background:var(--card-bg,#1e1b4b);">🇮🇳 മലയാളം</option>
+        <option value="mr" style="background:var(--card-bg,#1e1b4b);">🇮🇳 मराठी</option>
+        <option value="bn" style="background:var(--card-bg,#1e1b4b);">🇮🇳 বাংলা</option>
+        <option value="vi">🇻🇳 Tiếng Việt</option>
+        <option value="th">🇹🇭 ภาษาไทย</option>
+    </select>
+    <span id="rxLangStatus" style="margin-left:auto; font-size:0.75rem; color:var(--text-muted); white-space:nowrap;"></span>
+</div>
+
 <!-- ── 2. Visual Evidence ─────────────────────────────────────────── -->
 <div class="rx-section-title">
     <span class="rx-section-icon"><i data-lucide="scan-search" class="rx-section-glyph"></i></span>
@@ -247,7 +284,7 @@
 {% endif %}
 
 <!-- ── 13. Action Footer ──────────────────────────────────────────── -->
-<div class="rx-actions">
+<div class="rx-actions" style="flex-wrap:wrap; gap: 0.85rem;">
     {% if mode == 'disease' %}
         <a href="{{ url_for('disease_page') }}" class="btn btn-outline"><i data-lucide="microscope" style="width:16px;height:16px;"></i> Analyze Another Image</a>
         <a href="{{ url_for('detect_page') }}" class="btn btn-outline"><i data-lucide="crosshair" style="width:16px;height:16px;"></i> Try Lesion Detector</a>
@@ -256,12 +293,232 @@
         <a href="{{ url_for('disease_page') }}" class="btn btn-outline"><i data-lucide="microscope" style="width:16px;height:16px;"></i> Go to Disease Lab</a>
     {% endif %}
     <a href="{{ url_for('index') }}" class="btn btn-primary"><i data-lucide="home" style="width:16px;height:16px;"></i> Back to Home</a>
+
+    <!-- ★ Download Prescription PDF Button ★ -->
+    <button id="rxDownloadBtn" onclick="downloadPrescriptionPDF()" style="
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        background: #ffffff;
+        color: #111111;
+        border: 2px solid #111111; border-radius: 12px;
+        padding: 0.75rem 1.4rem;
+        font-size: 0.95rem; font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.07);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        letter-spacing: 0.01em;
+        position: relative; overflow: hidden;
+    "
+    onmouseover="this.style.transform='translateY(-2px) scale(1.03)';this.style.boxShadow='0 8px 28px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1)';this.style.background='#f5f5f5';"
+    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 18px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.07)';this.style.background='#ffffff';"
+    aria-label="Download Digital Prescription as PDF"
+    >
+        <span id="rxDlIcon" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Arrow shaft -->
+                <line x1="12" y1="3" x2="12" y2="15"/>
+                <!-- Arrow head -->
+                <polyline points="7,10 12,15 17,10"/>
+                <!-- Tray / underline -->
+                <path d="M4 19 Q4 21 6 21 L18 21 Q20 21 20 19"/>
+                <!-- Tray sides -->
+                <line x1="4" y1="17" x2="4" y2="19"/>
+                <line x1="20" y1="17" x2="20" y2="19"/>
+            </svg>
+        </span>
+        <span id="rxDlText">Download Prescription (PDF)</span>
+    </button>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════
      ASK AGROBOT — Floating Chat Widget
      ═══════════════════════════════════════════════════════════════════ -->
 {% include 'vqa_widget.html' %}
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     HIDDEN PDF REPORT TEMPLATE
+     This element is off-screen during normal view, rendered to PDF on demand.
+     ═══════════════════════════════════════════════════════════════════ -->
+<!-- Full-screen capture overlay — hides the template from user during PDF render -->
+<div id="pdfCaptureOverlay" style="
+    display: none;
+    position: fixed; inset: 0; z-index: 99998;
+    background: rgba(10,10,20,0.82);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 1rem;
+">
+    <div style="
+        background: linear-gradient(135deg,#1e1b4b,#4c1d95);
+        border-radius: 16px; padding: 2rem 2.5rem;
+        text-align: center; color: #fff;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    ">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem; animation: spin 1.2s linear infinite; display:inline-block;">&#9696;</div>
+        <div style="font-size: 1.1rem; font-weight: 700;">Generating Prescription PDF…</div>
+        <div style="font-size: 0.82rem; color: rgba(255,255,255,0.65); margin-top: 0.4rem;">Please wait, rendering your report</div>
+    </div>
+    <style>
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    </style>
+</div>
+
+<div id="pdfReportTemplate" style="
+    position: fixed;
+    top: -9999px;
+    left: 0;
+    width: 794px;
+    background: #ffffff;
+    opacity: 1;
+    visibility: visible;
+    font-family: 'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Telugu',
+                 'Noto Sans Kannada', 'Noto Sans Tamil', 'Noto Sans Malayalam',
+                 'Noto Sans Bengali', 'Noto Sans Thai', sans-serif;
+    color: #1a1a2e;
+    box-sizing: border-box;
+    padding: 0;
+    z-index: -1;
+">
+
+    <!-- ── PDF HEADER ── -->
+    <div style="
+        background: #111111;
+        padding: 32px 40px 24px;
+        display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 4px solid #000;
+    ">
+        <div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                <div style="
+                    width:44px; height:44px;
+                    background: rgba(255,255,255,0.12);
+                    border-radius: 10px;
+                    display:flex; align-items:center; justify-content:center;
+                    overflow:hidden;
+                ">
+                    <img src="/static/dragonfruit_icon.png"
+                         alt="Dragon Fruit"
+                         style="width:38px; height:38px; object-fit:contain; filter:invert(1);"
+                    >
+                </div>
+                <div>
+                    <div style="color:rgba(255,255,255,0.6); font-size:0.7rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase;">Dragon Fruit AI Suite</div>
+                    <div style="color:#ffffff; font-size:1.3rem; font-weight:800; letter-spacing:0.01em;">Digital Agricultural Prescription</div>
+                </div>
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <div id="pdfDate" style="color: rgba(255,255,255,0.8); font-size:0.82rem; font-weight:500;"></div>
+            <div style="color: rgba(255,255,255,0.45); font-size:0.7rem; margin-top:2px;">AI-Powered Field Diagnosis</div>
+        </div>
+    </div>
+
+    <!-- ── DIAGNOSIS BADGE STRIP ── -->
+    <div id="pdfDiagnosisBadge" style="
+        background: #f2f2f2;
+        border-left: 5px solid #111111;
+        padding: 16px 40px;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 10px;
+        border-bottom: 1px solid #ddd;
+    ">
+        <div>
+            <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em; color:#555555; font-weight:700; margin-bottom:3px;">DIAGNOSIS</div>
+            <div id="pdfDiseaseTitle" style="font-size:1.45rem; font-weight:800; color:#111111; line-height:1.1;"></div>
+            <div id="pdfPathogenLine" style="font-size:0.78rem; color:#444444; font-style:italic; margin-top:3px;"></div>
+        </div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <div style="text-align:center; background:#fff; border-radius:8px; padding:10px 16px; border: 1px solid #ddd;">
+                <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:0.09em; color:#555; font-weight:700;">Confidence</div>
+                <div id="pdfConfidence" style="font-size:1.3rem; font-weight:800; color:#111;"></div>
+            </div>
+            <div id="pdfSeverityBadge" style="text-align:center; border-radius:8px; padding:10px 16px; border: 1px solid #ddd;">
+                <div style="font-size:0.6rem; text-transform:uppercase; letter-spacing:0.09em; font-weight:700; color:#555;">Severity</div>
+                <div id="pdfSeverityText" style="font-size:1.1rem; font-weight:800;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SECTION: VISUAL EVIDENCE ── -->
+    <div style="padding: 24px 40px 8px;">
+        <div style="
+            display:flex; align-items:center; gap:8px;
+            border-bottom: 2px solid #222;
+            padding-bottom: 8px; margin-bottom: 16px;
+        ">
+            <span style="background:#111;color:#fff;border-radius:4px;padding:3px 8px;font-size:0.65rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;">01</span>
+            <span style="font-size:0.9rem; font-weight:700; color:#111; letter-spacing:0.02em;">Visual Evidence — AI Heatmap Analysis</span>
+        </div>
+        <div style="display:flex; gap:16px;">
+            <div style="flex:1; border-radius:8px; overflow:hidden; border:2px solid #222;">
+                <div style="background:#222; padding:6px 12px; font-size:0.65rem; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.09em;">Original Input</div>
+                <img id="pdfOriginalImg" src="" alt="Original" style="width:100%; display:block; height:200px; object-fit:cover;">
+            </div>
+            <div style="flex:1; border-radius:8px; overflow:hidden; border:2px solid #555;">
+                <div id="pdfOverlayLabel" style="background:#555; padding:6px 12px; font-size:0.65rem; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.09em;"></div>
+                <img id="pdfOverlayImg" src="" alt="Analysis Overlay" style="width:100%; display:block; height:200px; object-fit:cover;">
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SECTION: TREATMENT ── -->
+    <div style="padding: 20px 40px 8px;">
+        <div style="
+            display:flex; align-items:center; gap:8px;
+            border-bottom: 2px solid #222;
+            padding-bottom: 8px; margin-bottom: 14px;
+        ">
+            <span style="background:#111;color:#fff;border-radius:4px;padding:3px 8px;font-size:0.65rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;">02</span>
+            <span style="font-size:0.9rem; font-weight:700; color:#111; letter-spacing:0.02em;">Treatment Plan</span>
+        </div>
+        <div id="pdfTreatmentList" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+
+    <!-- ── SECTION: PREVENTION ── -->
+    <div style="padding: 16px 40px 8px;">
+        <div style="
+            display:flex; align-items:center; gap:8px;
+            border-bottom: 2px solid #222;
+            padding-bottom: 8px; margin-bottom: 14px;
+        ">
+            <span style="background:#111;color:#fff;border-radius:4px;padding:3px 8px;font-size:0.65rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;">03</span>
+            <span style="font-size:0.9rem; font-weight:700; color:#111; letter-spacing:0.02em;">Prevention Measures</span>
+        </div>
+        <div id="pdfPreventionList" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+
+    <!-- ── SECTION: ENVIRONMENTAL NOTE ── -->
+    <div style="padding: 16px 40px 8px;">
+        <div style="
+            display:flex; align-items:center; gap:8px;
+            border-bottom: 2px solid #222;
+            padding-bottom: 8px; margin-bottom: 10px;
+        ">
+            <span style="background:#111;color:#fff;border-radius:4px;padding:3px 8px;font-size:0.65rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;">04</span>
+            <span style="font-size:0.9rem; font-weight:700; color:#111; letter-spacing:0.02em;">Environmental Conditions</span>
+        </div>
+        <div id="pdfEnvNote" style="
+            background: #f5f5f5; border-left: 4px solid #333;
+            border-radius: 6px; padding: 12px 16px;
+            font-size: 0.82rem; color: #222; line-height: 1.65;
+        "></div>
+    </div>
+
+    <!-- ── PDF FOOTER ── -->
+    <div style="
+        background: #111111;
+        margin-top: 24px; padding: 16px 40px;
+        display: flex; align-items: center; justify-content: space-between;
+        border-top: 4px solid #000;
+    ">
+        <div style="color: rgba(255,255,255,0.55); font-size:0.68rem;">
+            Dragon Fruit AI Suite &copy; 2026 &nbsp;&middot;&nbsp; AI-Powered Agricultural Diagnosis
+        </div>
+        <div style="color: rgba(255,255,255,0.35); font-size:0.62rem;">
+            This report is AI-generated. Consult a local agronomist for field-level validation.
+        </div>
+    </div>
+
+</div><!-- end #pdfReportTemplate -->
 
 {% endblock %}
 
@@ -276,12 +533,403 @@ function toggleAccordion(id) {
     el.classList.toggle('open');
 }
 
-/* ── Chat functionality is now handled by vqa_widget.html ─────── */
-
 /* ── Auto-scroll chat on load ─────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
     const body = document.getElementById('chatBody');
     if (body) body.scrollTop = body.scrollHeight;
 });
+
+/* ═══════════════════════════════════════════════════════════════════
+   DIGITAL PRESCRIPTION PDF ENGINE
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Server-rendered data passed to JS ───────────────────────────── */
+const RX_DATA = {
+    mode:        "{{ mode }}",
+    disease:     "{{ prediction }}",
+    confidence:  {{ '%.1f' | format(confidence * 100) }},
+    severity:    "{{ advisory.severity if advisory else 'N/A' }}",
+    pathogen:    "{{ advisory.pathogen if advisory and advisory.pathogen else '' }}",
+    imgUrl:      "{{ img_url }}",
+    overlayUrl:  "{{ cam_url if mode == 'disease' else (annotated_url if annotated_url is defined else img_url) }}",
+    totalLesions: {{ total_lesions if total_lesions is defined else 0 }},
+    /* Treatment steps from advisory (EN fallback, replaced by dict on lang switch) */
+    treatmentStepsEN: {{ (advisory.treatment_steps | tojson) if advisory else '[]' }},
+    preventionTipsEN: {{ (advisory.prevention_tips | tojson) if advisory else '[]' }},
+    environmentalEN:  "{{ advisory.environmental_note | replace('"','\\"') if advisory else '' }}",
+};
+
+/* ── Translation dictionary cache ────────────────────────────────── */
+let _answerDict = null;
+async function _getDict() {
+    if (_answerDict) return _answerDict;
+    try {
+        const r = await fetch('/static/mobile_answer_dict.json');
+        _answerDict = await r.json();
+    } catch(e) {
+        console.warn('[RxPDF] Dict load failed', e);
+        _answerDict = {};
+    }
+    return _answerDict;
+}
+
+/* ── Disease → dict key mapping ─────────────────────────────────── */
+const DISEASE_TREATMENT_KEYS = {
+    'Anthracnose':    '11',
+    'Brown_Stem_Spot':'12',
+    'Gray_Blight':    '13',
+    'Healthy':        '14',
+    'Soft_Rot':       '15',
+    'Stem_Canker':    '16',
+};
+const DISEASE_PREVENTION_KEYS = {
+    'Anthracnose':    '17',
+    'Brown_Stem_Spot':'18',
+    'Gray_Blight':    '19',
+    'Healthy':        '20',
+    'Soft_Rot':       '21',
+    'Stem_Canker':    '22',
+};
+const DISEASE_ENV_KEY = '30';
+
+/* ── Severity color palette ──────────────────────────────────────── */
+const SEVERITY_STYLES = {
+    'None':     { bg: '#dcfce7', color: '#166534', border: '#16a34a' },
+    'Low':      { bg: '#fef9c3', color: '#854d0e', border: '#ca8a04' },
+    'Moderate': { bg: '#ffedd5', color: '#9a3412', border: '#ea580c' },
+    'High':     { bg: '#fee2e2', color: '#991b1b', border: '#dc2626' },
+    'Very High':{ bg: '#f3e8ff', color: '#6b21a8', border: '#9333ea' },
+};
+
+/* ── Populate PDF template ───────────────────────────────────────── */
+async function _populatePdfTemplate(lang) {
+    const dict = await _getDict();
+    const langDict = dict[lang] || dict['en'] || {};
+
+    // Date
+    const now = new Date();
+    document.getElementById('pdfDate').textContent =
+        now.toLocaleDateString('en-GB', {day:'2-digit', month:'long', year:'numeric'});
+
+    // Disease title
+    const diseaseDisplay = RX_DATA.disease.replace(/_/g,' ');
+    document.getElementById('pdfDiseaseTitle').textContent = diseaseDisplay;
+
+    // Pathogen
+    const pathEl = document.getElementById('pdfPathogenLine');
+    if (RX_DATA.pathogen) {
+        pathEl.textContent = 'Caused by: ' + RX_DATA.pathogen;
+    } else {
+        pathEl.textContent = 'No pathogen detected — plant appears healthy';
+    }
+
+    // Confidence
+    document.getElementById('pdfConfidence').textContent = RX_DATA.confidence.toFixed(1) + '%';
+
+    // Severity badge
+    const sev = RX_DATA.severity;
+    const sevStyle = SEVERITY_STYLES[sev] || SEVERITY_STYLES['Moderate'];
+    const sevBadge = document.getElementById('pdfSeverityBadge');
+    const sevText  = document.getElementById('pdfSeverityText');
+    sevBadge.style.background = sevStyle.bg;
+    sevBadge.style.borderLeft = '3px solid ' + sevStyle.border;
+    sevText.style.color = sevStyle.color;
+    sevText.textContent = sev;
+    sevBadge.querySelector('div').style.color = sevStyle.color;
+
+    // Images
+    document.getElementById('pdfOriginalImg').src = RX_DATA.imgUrl;
+    document.getElementById('pdfOverlayImg').src  = RX_DATA.overlayUrl;
+    const overlayLabelEl = document.getElementById('pdfOverlayLabel');
+    if (RX_DATA.mode === 'disease') {
+        overlayLabelEl.textContent = '🔬 Grad-CAM Heatmap';
+    } else {
+        overlayLabelEl.textContent = '🎯 YOLOv8 Lesion Annotations (' + RX_DATA.totalLesions + ' found)';
+    }
+
+    /* ── Treatment Steps ── */
+    const treatKey  = DISEASE_TREATMENT_KEYS[RX_DATA.disease];
+    const treatEl   = document.getElementById('pdfTreatmentList');
+    treatEl.innerHTML = '';
+
+    let treatLines = [];
+    if (treatKey && langDict[treatKey]) {
+        // Split long translated string into bullet segments (split on sentence endings or semicolons)
+        treatLines = langDict[treatKey]
+            .split(/\.\s+|;\s*/)
+            .map(s => s.trim())
+            .filter(s => s.length > 4);
+    } else {
+        treatLines = RX_DATA.treatmentStepsEN;
+    }
+    treatLines.forEach((step, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = `
+            display:flex; gap:10px; align-items:flex-start;
+            background: ${i%2===0?'#ffffff':'#f5f5f5'};
+            border-radius: 6px; padding: 9px 13px;
+            border-left: 3px solid #333333;
+        `;
+        row.innerHTML = `
+            <span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;
+                background:#111;color:#fff;display:flex;align-items:center;
+                justify-content:center;font-size:0.68rem;font-weight:800;">${i+1}</span>
+            <span style="font-size:0.82rem;line-height:1.6;color:#111;
+                font-family:inherit;">${step}.</span>
+        `;
+        treatEl.appendChild(row);
+    });
+
+    /* ── Prevention Tips ── */
+    const prevKey = DISEASE_PREVENTION_KEYS[RX_DATA.disease];
+    const prevEl  = document.getElementById('pdfPreventionList');
+    prevEl.innerHTML = '';
+
+    let prevLines = [];
+    if (prevKey && langDict[prevKey]) {
+        prevLines = langDict[prevKey]
+            .split(/\.\s+|;\s*/)
+            .map(s => s.trim())
+            .filter(s => s.length > 4);
+    } else {
+        prevLines = RX_DATA.preventionTipsEN;
+    }
+    prevLines.forEach((tip, i) => {
+        const icons = ['🌱','💧','✂️','🔍','⚗️','🌡️','📋','❤️'];
+        const row = document.createElement('div');
+        row.style.cssText = `
+            display:flex; gap:10px; align-items:flex-start;
+            background: ${i%2===0?'#ffffff':'#f5f5f5'};
+            border-radius: 6px; padding: 9px 13px;
+            border-left: 3px solid #555555;
+        `;
+        row.innerHTML = `
+            <span style="flex-shrink:0;font-size:0.9rem;margin-top:1px;">${icons[i%icons.length]}</span>
+            <span style="font-size:0.82rem;line-height:1.6;color:#111;
+                font-family:inherit;">${tip}.</span>
+        `;
+        prevEl.appendChild(row);
+    });
+
+    /* ── Environmental Note ── */
+    const envText = (langDict[DISEASE_ENV_KEY]) || RX_DATA.environmentalEN;
+    document.getElementById('pdfEnvNote').textContent = envText;
+}
+
+/* \u2500\u2500 Language Switcher Handler \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+document.addEventListener('DOMContentLoaded', async () => {
+    const sel    = document.getElementById('rxLangSelect');
+    const status = document.getElementById('rxLangStatus');
+    if (!sel) return;
+    _getDict().then(() => { if (status) status.textContent = '\u2713 Ready'; });
+    sel.addEventListener('change', () => {
+        if (status) status.textContent = '...';
+        setTimeout(() => { if (status) status.textContent = '\u2713 Applied'; }, 300);
+    });
+});
+
+/* \u2500\u2500 Image load helper \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+function _waitForImg(img) {
+    return new Promise(res => {
+        if (!img.src || img.src === window.location.href) { res(); return; }
+        if (img.complete && img.naturalHeight > 0) { res(); return; }
+        img.onload  = res;
+        img.onerror = res;
+    });
+}
+
+/* \u2500\u2500 Overlay helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+function _showOverlay() { const o = document.getElementById('pdfCaptureOverlay'); if (o) o.style.display = 'flex'; }
+function _hideOverlay() { const o = document.getElementById('pdfCaptureOverlay'); if (o) o.style.display = 'none'; }
+
+/* \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+   MAIN PDF DOWNLOAD — html2canvas + jsPDF (direct, no html2pdf wrapper)
+
+   WHY THIS APPROACH:
+   html2pdf's .from(element) clones the DOM and loses computed styles
+   for positioned/off-screen elements, producing blank output.
+
+   Instead we use html2canvas directly with the 'onclone' callback,
+   which lets us forcibly make the element visible INSIDE the cloned
+   document before any rendering occurs. Then we stitch the resulting
+   canvas across A4 pages manually with jsPDF.
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+async function downloadPrescriptionPDF() {
+    /* Guard: check both libraries are loaded */
+    if (typeof html2canvas === 'undefined') {
+        alert('html2canvas not loaded. Check your internet connection and reload the page.');
+        return;
+    }
+    if (typeof window.jspdf === 'undefined') {
+        alert('jsPDF not loaded. Check your internet connection and reload the page.');
+        return;
+    }
+
+    const btn    = document.getElementById('rxDownloadBtn');
+    const dlText = document.getElementById('rxDlText');
+    const dlIcon = document.getElementById('rxDlIcon');
+    const status = document.getElementById('rxLangStatus');
+    const lang   = document.getElementById('rxLangSelect')?.value || 'en';
+
+    /* SVG used to restore the icon after state changes */
+    const SVG_DL = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"
+        fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="3" x2="12" y2="15"/>
+        <polyline points="7,10 12,15 17,10"/>
+        <path d="M4 19 Q4 21 6 21 L18 21 Q20 21 20 19"/>
+        <line x1="4" y1="17" x2="4" y2="19"/>
+        <line x1="20" y1="17" x2="20" y2="19"/>
+    </svg>`;
+
+    /* Button loading state */
+    btn.disabled = true;
+    btn.style.opacity = '0.75';
+    dlIcon.innerHTML = '<span style="font-size:1.15rem;">&#9203;</span>';
+    dlText.textContent = 'Generating PDF...';
+    if (status) status.textContent = '&#9203; Rendering...';
+
+    try {
+        /* STEP 1: Fonts */
+        await document.fonts.ready;
+
+        /* STEP 2: Populate template text content */
+        await _populatePdfTemplate(lang);
+
+        /* STEP 3: Pre-load images into the template NOW (before clone) */
+        const imgOrig    = document.getElementById('pdfOriginalImg');
+        const imgOverlay = document.getElementById('pdfOverlayImg');
+        imgOrig.src    = RX_DATA.imgUrl;
+        imgOverlay.src = RX_DATA.overlayUrl;
+        await Promise.all([_waitForImg(imgOrig), _waitForImg(imgOverlay)]);
+
+        /* STEP 4: Show loading overlay to hide the brief flash */
+        _showOverlay();
+
+        /* STEP 5: Give browser one paint cycle */
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 200));
+
+        /* STEP 6: Render via html2canvas using onclone callback.
+           onclone receives the cloned document BEFORE rendering starts.
+           We forcibly make the cloned element STATIC and FULLY VISIBLE here.
+           This is the only reliable way to capture off-screen/hidden elements. */
+        const template = document.getElementById('pdfReportTemplate');
+
+        const canvas = await html2canvas(template, {
+            scale:           2,
+            useCORS:         true,
+            allowTaint:      false,
+            letterRendering: true,
+            logging:         false,
+            backgroundColor: '#ffffff',
+            onclone: (clonedDoc) => {
+                const el = clonedDoc.getElementById('pdfReportTemplate');
+                if (!el) return;
+                /* Strip ALL positioning — make it flow in-document */
+                el.style.cssText = `
+                    position: static !important;
+                    top: auto !important;
+                    left: auto !important;
+                    width: 794px !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    display: block !important;
+                    z-index: auto !important;
+                    background: #ffffff;
+                    font-family: 'Noto Sans','Noto Sans Devanagari','Noto Sans Telugu',
+                                 'Noto Sans Kannada','Noto Sans Tamil','Noto Sans Malayalam',
+                                 'Noto Sans Bengali','Noto Sans Thai', sans-serif;
+                    color: #1a1a2e;
+                    box-sizing: border-box;
+                    padding: 0;
+                `;
+                /* Fix icon src to absolute URL so html2canvas loads it */
+                const icons = clonedDoc.querySelectorAll('img[src="/static/dragonfruit_icon.png"]');
+                icons.forEach(ic => { ic.src = window.location.origin + '/static/dragonfruit_icon.png'; });
+                /* Also hide the overlay inside the clone so it doesn't cover */
+                const ov = clonedDoc.getElementById('pdfCaptureOverlay');
+                if (ov) ov.style.display = 'none';
+            }
+        });
+
+        /* STEP 7: Check canvas isn't blank */
+        if (canvas.width === 0 || canvas.height === 0) {
+            throw new Error('Canvas is empty — nothing was rendered.');
+        }
+
+        /* STEP 8: Build jsPDF document from the canvas.
+           We slice the tall canvas into A4 pages. */
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ unit: 'px', format: 'a4', orientation: 'portrait' });
+
+        const pageW  = pdf.internal.pageSize.getWidth();   /* px */
+        const pageH  = pdf.internal.pageSize.getHeight();  /* px */
+
+        /* Scale canvas width to fit the PDF page width exactly */
+        const canvasW      = canvas.width;
+        const canvasH      = canvas.height;
+        const scaleFactor  = pageW / canvasW;
+        const scaledH      = canvasH * scaleFactor;
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.97);
+
+        let yOffset = 0;  /* current top of remaining canvas (in canvas px) */
+        let pageNum = 0;
+
+        while (yOffset < canvasH) {
+            if (pageNum > 0) pdf.addPage();
+
+            /* How many canvas pixels fit on one PDF page */
+            const sliceH = pageH / scaleFactor;
+
+            /* Draw this slice onto the PDF page */
+            pdf.addImage(
+                imgData,
+                'JPEG',
+                0,                      /* x on PDF page */
+                -(yOffset * scaleFactor), /* y offset — negative pushes canvas up */
+                canvasW * scaleFactor,  /* full scaled width */
+                canvasH * scaleFactor,  /* full scaled height */
+            );
+
+            yOffset += sliceH;
+            pageNum++;
+        }
+
+        /* STEP 9: Generate filename and save */
+        const today   = new Date();
+        const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        const slug    = RX_DATA.disease.replace(/_/g,'');
+        pdf.save(`AgriReport_DragonFruit_${slug}_${dateStr}.pdf`);
+
+        /* STEP 10: Restore + success */
+        _hideOverlay();
+        dlIcon.innerHTML = '<span style="font-size:1.15rem;">&#10003;</span>';
+        dlText.textContent = 'Downloaded!';
+        if (status) status.textContent = '\u2705 PDF saved';
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            dlIcon.innerHTML = SVG_DL;
+            dlText.textContent = 'Download Prescription (PDF)';
+            if (status) status.textContent = '';
+        }, 3000);
+
+    } catch (err) {
+        console.error('[RxPDF]', err);
+        _hideOverlay();
+        dlIcon.innerHTML = '<span style="font-size:1.15rem;">&#10005;</span>';
+        dlText.textContent = 'Failed \u2014 try again';
+        if (status) status.textContent = '\u274c ' + err.message;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        setTimeout(() => {
+            dlIcon.innerHTML = SVG_DL;
+            dlText.textContent = 'Download Prescription (PDF)';
+            if (status) status.textContent = '';
+        }, 4000);
+    }
+}
 </script>
 {% endblock %}

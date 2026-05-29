@@ -428,56 +428,65 @@ CURRENT SYSTEM CONTEXT:
 
 YOUR CORE DIRECTIVES:
 1. VQA Awareness: You are "looking" at the same image the CNN model just evaluated. Always frame your advice around the current detected disease (e.g., Anthracnose, Stem Canker, Soft Rot, etc.).
-2. Technical Precision: Use highly precise, scientific terminology (e.g., specific pathogens like Colletotrichum gloeosporioides or Neoscytalidium dimidiatum). Do not use vague terms.
-3. Actionable Agronomy: When asked for treatments, provide specific chemical controls (fungicides/bactericides with PPM or percentage concentrations), organic alternatives, and environmental prevention strategies.
-4. Conciseness: You are interfacing through a mobile-first field app. Keep responses structured, brief, and highly readable using bullet points. Do not output massive walls of text.
-5. Tone: Analytical, objective, and expert. You are advising a modern farmer or an agricultural software engineer.
+2. Helpful First: Start with the direct answer the user needs, then add the next best action. If the question is vague, ask one short clarifying question instead of giving a generic lecture.
+3. Technical Precision: Use precise scientific terminology when it helps, but keep the language practical and easy to act on.
+4. Actionable Agronomy: When asked for treatments, provide specific chemical controls (fungicides/bactericides with PPM or percentage concentrations), organic alternatives, and environmental prevention strategies.
+5. Conciseness: You are interfacing through a mobile-first field app. Keep responses structured, brief, and highly readable using bullet points. Do not output massive walls of text.
+6. Tone: Friendly, supportive, and competent. Sound like a real helper who wants to solve the user's problem, not like a static reference page.
 
 If the user asks questions unrelated to agriculture, software development, or dragon fruit cultivation, politely redirect them back to the crop analysis at hand.
 """.strip()
 
 
 def _fallback_chat_reply(user_msg: str, disease: str, confidence: float, db: dict) -> str:
+    disease_label = disease.replace('_', ' ')
+
     greetings = ["hi", "hello", "hey", "good morning", "good evening", "help"]
     if any(g in user_msg for g in greetings):
         if disease == "Healthy":
             return (
-                f"Hello! 👋 Your plant has been classified as **Healthy** "
-                f"with {confidence:.0%} confidence. No treatment is needed right now. "
-                f"Would you like tips on preventive care or optimal growing conditions?"
+                f"Hello. I checked the image and the plant looks **healthy** with {confidence:.0%} confidence. "
+                f"No treatment is needed right now. If you want, I can help with prevention tips, watering, fertilization, or what to watch for next."
             )
 
         return (
-            f"Hello! 👋 I can see your plant has been diagnosed with "
-            f"**{disease.replace('_', ' ')}** ({confidence:.0%} confidence). "
-            f"Ask me about treatment options, prevention, symptoms, or the pathogen involved!"
+            f"I checked the image and the most likely issue is **{disease_label}** with {confidence:.0%} confidence. "
+            f"I can help with treatment, prevention, symptoms, the pathogen, or how serious it is."
         )
 
     treatment_kw = ["treat", "cure", "fix", "medicine", "fungicide", "spray", "chemical", "remedy", "drug", "apply", "dosage", "bactericide"]
     if any(kw in user_msg for kw in treatment_kw):
         steps = db.get("treatment", ["No specific treatment information available."])
         formatted = "\n".join(f"{i + 1}. {s}" for i, s in enumerate(steps))
-        return f"**Treatment Plan for {disease.replace('_', ' ')}:**\n\n{formatted}"
+        return (
+            f"Here is a practical treatment plan for **{disease_label}**:\n\n"
+            f"{formatted}\n\n"
+            f"If you want, I can also turn this into a quick step-by-step spray and cleanup plan."
+        )
 
     prevention_kw = ["prevent", "avoid", "stop", "protect", "precaution", "future", "recurring", "again", "safe"]
     if any(kw in user_msg for kw in prevention_kw):
         tips = db.get("prevention", ["No specific prevention tips available."])
         formatted = "\n".join(f"• {t}" for t in tips)
-        return f"**Prevention Measures for {disease.replace('_', ' ')}:**\n\n{formatted}"
+        return (
+            f"To help prevent **{disease_label}** from coming back:\n\n"
+            f"{formatted}\n\n"
+            f"I can also give you a shorter field checklist if you need one."
+        )
 
     pathogen_kw = ["cause", "pathogen", "bacteria", "fungus", "fungi", "organism", "why", "what is", "what's", "about"]
     if any(kw in user_msg for kw in pathogen_kw):
         pathogen = db.get("pathogen") or "No specific pathogen (plant is healthy)"
         desc = db.get("description", "")
         return (
-            f"**{disease.replace('_', ' ')}** is caused by *{pathogen}*.\n\n"
+            f"**{disease_label}** is caused by *{pathogen}*.\n\n"
             f"{desc}"
         )
 
     env_kw = ["environment", "weather", "temperature", "humidity", "climate", "rain", "condition", "season", "monsoon", "water"]
     if any(kw in user_msg for kw in env_kw):
         env_note = db.get("environmental", "No specific environmental data available.")
-        return f"**Environmental Conditions for {disease.replace('_', ' ')}:**\n\n{env_note}"
+        return f"Here are the environmental conditions that favor **{disease_label}**:\n\n{env_note}"
 
     sev_kw = ["severe", "severity", "serious", "danger", "bad", "fatal", "risk", "urgent"]
     if any(kw in user_msg for kw in sev_kw):
@@ -491,7 +500,7 @@ def _fallback_chat_reply(user_msg: str, disease: str, confidence: float, db: dic
             4: "Very high risk — aggressive intervention required, can kill entire plants.",
         }
         return (
-            f"**Severity Level: {severity}** (Score: {score}/4)\n\n"
+            f"The severity for **{disease_label}** is **{severity}** (score {score}/4).\n\n"
             f"{level_desc.get(score, 'Unknown severity level.')}"
         )
 
@@ -499,21 +508,16 @@ def _fallback_chat_reply(user_msg: str, disease: str, confidence: float, db: dic
     if any(kw in user_msg for kw in symptom_kw):
         cues = db.get("visual_cues", ["No visual cue information available."])
         formatted = "\n".join(f"• {c}" for c in cues)
-        return f"**Visual Symptoms of {disease.replace('_', ' ')}:**\n\n{formatted}"
+        return f"These are the main visual signs of **{disease_label}**:\n\n{formatted}"
 
     pathogen = db.get("pathogen") or "None (healthy)"
     desc = db.get("description", "No description available.")
     return (
-        f"Here's what I know about **{disease.replace('_', ' ')}**:\n\n"
+        f"Here is the useful information I have for **{disease_label}**:\n\n"
         f"**Pathogen:** *{pathogen}*\n"
         f"**Severity:** {db.get('severity', 'N/A')}\n\n"
         f"{desc}\n\n"
-        f"You can ask me specifically about:\n"
-        f"• Treatment options\n"
-        f"• Prevention measures\n"
-        f"• Symptoms & visual signs\n"
-        f"• Environmental conditions\n"
-        f"• Severity & risk level"
+        f"You can ask me about treatment, prevention, symptoms, the pathogen, or how urgent it is."
     )
 
 
@@ -545,6 +549,12 @@ def _call_gemini_chat(user_message: str, context: str, history):
     reply = "".join(part.get("text", "") for part in parts if isinstance(part, dict)).strip()
     if not reply:
         raise ValueError("Gemini returned an empty response.")
+
+    if len(reply.split()) < 12:
+        reply = (
+            f"{reply.strip()}\n\n"
+            f"If you want, I can also break this into a treatment plan, prevention checklist, or severity summary."
+        ).strip()
 
     return reply
 

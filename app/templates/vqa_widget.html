@@ -18,8 +18,14 @@
 
     <div class="chat-panel-body" id="chatBody"></div>
 
+    <div class="chat-quick-replies" aria-label="Quick reply suggestions">
+        <button type="button" onclick="sendQuickReply('What should I do first?')">What should I do first?</button>
+        <button type="button" onclick="sendQuickReply('How serious is this?')">How serious is this?</button>
+        <button type="button" onclick="sendQuickReply('How do I prevent it?')">How do I prevent it?</button>
+    </div>
+
     <div class="chat-panel-input">
-        <input type="text" id="chatInput" placeholder="Ask about treatment, prevention, or disease..." onkeypress="if(event.key==='Enter')sendChatMessage()">
+            <input type="text" id="chatInput" placeholder="Ask what to do next..." onkeypress="if(event.key==='Enter')sendChatMessage()">
         <button onclick="sendChatMessage()">
             <i data-lucide="send" style="width:16px;height:16px;"></i>
         </button>
@@ -47,11 +53,26 @@ function scrollChatToBottom() {
     if (body) body.scrollTop = body.scrollHeight;
 }
 
+function renderChatText(text) {
+    const escaped = String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    return escaped
+        .replace(/^###\s+(.*)$/gm, '<div class="chat-mini-heading">$1</div>')
+        .replace(/^##\s+(.*)$/gm, '<div class="chat-mini-heading">$1</div>')
+        .replace(/^\*\*(.*?)\*\*:/gm, '<strong>$1</strong>:')
+        .replace(/^\*\*(.*?)\*\*$/gm, '<strong>$1</strong>')
+        .replace(/^\s*[-•]\s+/gm, '• ')
+        .replace(/\n/g, '<br>');
+}
+
 function appendChatBubble(text, sender, loading = false) {
     const body = document.getElementById('chatBody');
     const bubble = document.createElement('div');
     bubble.className = `chat-bubble ${sender}${loading ? ' typing' : ''}`;
-    bubble.textContent = text;
+    bubble.innerHTML = renderChatText(text);
     const bubbleId = `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     bubble.id = bubbleId;
     body.appendChild(bubble);
@@ -62,7 +83,7 @@ function appendChatBubble(text, sender, loading = false) {
 function renderGreeting() {
     const body = document.getElementById('chatBody');
     if (!body || body.children.length) return;
-    const greeting = `Analysis complete. I am currently reviewing the results for ${predictionValue.replace(/_/g, ' ')}. Ask me anything about treatments, fungicides, or crop management.`;
+    const greeting = `I checked the image and I'm ready to help with ${predictionValue.replace(/_/g, ' ')}. Ask me what the problem is, how serious it looks, what treatment to use, or what to do next.`;
     appendChatBubble(greeting, 'bot');
 }
 
@@ -93,7 +114,7 @@ async function sendChatMessage() {
         const loadingNode = document.getElementById(loadingId);
         if (loadingNode) {
             loadingNode.classList.remove('typing');
-            loadingNode.textContent = data.reply || 'No reply received.';
+            loadingNode.innerHTML = renderChatText(data.reply || 'No reply received.');
         }
 
         if (data.success && Array.isArray(data.history)) {
@@ -103,11 +124,19 @@ async function sendChatMessage() {
         const loadingNode = document.getElementById(loadingId);
         if (loadingNode) {
             loadingNode.classList.remove('typing');
-            loadingNode.textContent = 'System fault. Please try again.';
+            loadingNode.innerHTML = renderChatText('System fault. Please try again.');
         }
     }
 
     scrollChatToBottom();
+}
+
+async function sendQuickReply(text) {
+    const input = document.getElementById('chatInput');
+    if (input) {
+        input.value = text;
+    }
+    await sendChatMessage();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -17,14 +17,14 @@
     <form id="uploadForm" action="{{ url_for('predict_detect') }}" method="POST" enctype="multipart/form-data">
         <div class="upload-two-col">
             <div>
-                <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-area" id="dropZone">
                     <span class="upload-icon"><i data-lucide="image" style="width:44px;height:44px;"></i></span>
                     <p><strong>Click to browse</strong> or drag &amp; drop an image</p>
                     <p class="hint">JPG, PNG, WebP &middot; Max 10 MB</p>
                     <img id="preview" class="upload-preview" alt="Preview">
                         <div style="margin-top:0.6rem; text-align:left;">
                             <label style="font-size:0.9rem; color:var(--text-muted);">
-                                <input type="checkbox" id="confirmCheckbox">&nbsp; I confirm this image contains a dragon fruit
+                                <input type="checkbox" id="confirmCheckbox" style="width:18px;height:18px;transform:scale(1.15);vertical-align:middle;">&nbsp; I confirm this image contains a dragon fruit
                             </label>
                         </div>
                     </div>
@@ -94,6 +94,10 @@ const form = document.getElementById('uploadForm');
 const spinner = document.getElementById('spinner');
 const confirmCheckbox = document.getElementById('confirmCheckbox');
 
+dropZone.addEventListener('click', e => {
+    if (e.target.closest('input, label, button, a, select, textarea')) return;
+    fileInput.click();
+});
 fileInput.addEventListener('change', () => { if(fileInput.files.length) showPreview(fileInput.files[0]); });
 ['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('drag-over'); }));
 ['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('drag-over'); }));

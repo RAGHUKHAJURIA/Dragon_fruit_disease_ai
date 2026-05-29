@@ -5,13 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Dragon Fruit AI Suite - Disease Diagnosis and Quality Grading">
     <title>{% block title %}Dragon Fruit AI Suite{% endblock %}</title>
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon"  href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="apple-touch-icon" sizes="192x192" href="{{ url_for('static', filename='favicon-192.png') }}">
+    <meta name="theme-color" content="#1e1b4b">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <!-- Temporarily disabled to restore original theme while we fix enhancements -->
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style_enhancements.css') }}"> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='localization.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&family=Noto+Sans+Thai:wght@400;600&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- html2canvas — DOM-to-canvas renderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+    <!-- jsPDF — canvas-to-PDF engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <canvas id="particles-canvas" style="position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.6;"></canvas>

@@ -1395,6 +1395,38 @@ img[src^="/icons/"] {
     min-height: 280px;
 }
 
+.chat-quick-replies {
+    padding: 0 1.3rem 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.chat-quick-replies button {
+    border: 1px solid rgba(0,0,0,0.14);
+    background: rgba(0,0,0,0.03);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 0.38rem 0.72rem;
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.chat-quick-replies button:hover {
+    background: rgba(0,0,0,0.08);
+    color: var(--text-primary);
+    border-color: rgba(0,0,0,0.28);
+    transform: translateY(-1px);
+}
+
+.chat-mini-heading {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.15rem 0 0.35rem;
+}
+
 .chat-bubble {
     max-width: 85%;
     padding: 0.75rem 1rem;
@@ -2223,3 +2255,95 @@ body.dark-mode select option {
     background: var(--card-bg-solid);
     color: var(--text-primary);
 }
+
+/* ── Agrobot Chat Widget Dark Mode ───────────────────────────────── */
+body.dark-mode .chat-panel {
+    background: var(--card-bg-solid);
+    border-color: var(--border);
+    color: var(--text-primary);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+}
+
+body.dark-mode .chat-panel-header {
+    border-bottom: 1px solid var(--border);
+}
+
+body.dark-mode .chat-panel-header h3 {
+    color: var(--text-primary);
+}
+
+body.dark-mode .chat-panel-close {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .chat-panel-close:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+body.dark-mode .chat-bubble.bot {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+body.dark-mode .chat-bubble.user {
+    background: var(--text-primary);
+    color: var(--bg-dark);
+}
+
+body.dark-mode .chat-panel-input {
+    border-top: 1px solid var(--border);
+}
+
+body.dark-mode .chat-panel-input input {
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+}
+
+body.dark-mode .chat-panel-input input:focus {
+    border-color: var(--text-primary) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .chat-panel-input button {
+    background: var(--text-primary);
+    color: var(--bg-dark);
+}
+
+body.dark-mode .chat-panel-input button:hover {
+    background: var(--text-secondary);
+}
+
+body.dark-mode .chat-quick-replies button {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
+    border-color: rgba(255,255,255,0.12);
+}
+
+body.dark-mode .chat-quick-replies button:hover {
+    background: rgba(255,255,255,0.12);
+    color: var(--text-primary);
+    border-color: rgba(255,255,255,0.22);
+}
+
+body.dark-mode .chat-mini-heading {
+    color: var(--text-primary);
+}
+
+body.dark-mode .fab-chat {
+    background: linear-gradient(135deg, #ffffff, #dddddd);
+    color: #111111;
+    box-shadow: 0 6px 24px rgba(255, 255, 255, 0.15);
+    animation: fabPulseDark 2s infinite;
+}
+
+body.dark-mode .fab-chat .fab-badge {
+    border-color: #111111;
+}
+
+@keyframes fabPulseDark {
+    0%, 100% { box-shadow: 0 6px 24px rgba(255, 255, 255, 0.15); }
+    50%      { box-shadow: 0 6px 24px rgba(255, 255, 255, 0.15), 0 0 0 8px rgba(255, 255, 255, 0.08); }
+}
+
