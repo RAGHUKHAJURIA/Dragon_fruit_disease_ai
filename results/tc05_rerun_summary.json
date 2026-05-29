@@ -1,0 +1,58 @@
+[
+  {
+    "expected_class": "Fresh Dragon Fruit",
+    "image": "dataset/Dragon Fruit Quality Grading Dataset/Original Dataset/Fresh Dragon Fruit/Fresh_Dragon_Original_Data0001.jpg",
+    "predicted_class": "Mature Dragon Fruit",
+    "confidence": 0.5810409784317017,
+    "probabilities": {
+      "Defect Dragon Fruit": 0.008431040681898594,
+      "Fresh Dragon Fruit": 0.40240174531936646,
+      "Immature Dragon Fruit": 0.008126324974000454,
+      "Mature Dragon Fruit": 0.5810409784317017
+    },
+    "artifact": "results/tc05_fresh.png",
+    "low_confidence": false
+  },
+  {
+    "expected_class": "Defect Dragon Fruit",
+    "image": "dataset/Dragon Fruit Quality Grading Dataset/Original Dataset/Defect Dragon Fruit/Defect_Dragon_Original_Data0001.jpg",
+    "predicted_class": "Defect Dragon Fruit",
+    "confidence": 0.8770002126693726,
+    "probabilities": {
+      "Defect Dragon Fruit": 0.8770002126693726,
+      "Fresh Dragon Fruit": 0.05555282160639763,
+      "Immature Dragon Fruit": 0.0069839912466704845,
+      "Mature Dragon Fruit": 0.060462966561317444
+    },
+    "artifact": "results/tc05_defect.png",
+    "low_confidence": false
+  },
+  {
+    "expected_class": "Immature Dragon Fruit",
+    "image": "dataset/Dragon Fruit Quality Grading Dataset/Augmented Dataset/Immature Dragon Fruit/Immature_Dragon_Augmented_Data0001.jpg",
+    "predicted_class": "Immature Dragon Fruit",
+    "confidence": 0.9605826735496521,
+    "probabilities": {
+      "Defect Dragon Fruit": 0.016996614634990692,
+      "Fresh Dragon Fruit": 0.010178652592003345,
+      "Immature Dragon Fruit": 0.9605826735496521,
+      "Mature Dragon Fruit": 0.012242038734257221
+    },
+    "artifact": "results/tc05_immature.png",
+    "low_confidence": false
+  },
+  {
+    "expected_class": "Mature Dragon Fruit",
+    "image": "dataset/Dragon Fruit Quality Grading Dataset/Augmented Dataset/Mature Dragon Fruit/Mature_Dragon_Augmented_Data0001.jpg",
+    "predicted_class": "Mature Dragon Fruit",
+    "confidence": 0.5829880237579346,
+    "probabilities": {
+      "Defect Dragon Fruit": 0.008667892776429653,
+      "Fresh Dragon Fruit": 0.4018494486808777,
+      "Immature Dragon Fruit": 0.006494683213531971,
+      "Mature Dragon Fruit": 0.5829880237579346
+    },
+    "artifact": "results/tc05_mature.png",
+    "low_confidence": false
+  }
+]

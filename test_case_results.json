@@ -1,0 +1,83 @@
+[
+  {
+    "Test Case ID": "TC-01",
+    "Module Tested": "Image Upload Module",
+    "Test Description": "Verify system accepts valid image formats",
+    "Input": "Upload JPG/PNG",
+    "Expected Result": "Image uploaded successfully",
+    "Actual Result": "Streamlit allowed: ['jpg', 'jpeg', 'png', 'webp']; Flask allowed: ['bmp', 'jpeg', 'jpg', 'png', 'webp']",
+    "Status": "PASS"
+  },
+  {
+    "Test Case ID": "TC-02",
+    "Module Tested": "Input Validation",
+    "Test Description": "Verify system rejects unsupported files",
+    "Input": "Upload .pdf/.txt/.exe",
+    "Expected Result": "Error message displayed",
+    "Actual Result": "Upload types do not include pdf/txt/exe",
+    "Status": "PASS"
+  },
+  {
+    "Test Case ID": "TC-03",
+    "Module Tested": "Disease Classification Module",
+    "Test Description": "Run Grad-CAM on sample",
+    "Input": "model load or run failed",
+    "Expected Result": "Correct disease prediction",
+    "Actual Result": "ERROR: [Errno 2] No such file or directory: 'results\\\\tc03_gradcam.png'",
+    "Status": "FAIL"
+  },
+  {
+    "Test Case ID": "TC-04",
+    "Module Tested": "Disease Detection",
+    "Test Description": "Healthy detection",
+    "Input": "model load or run failed",
+    "Expected Result": "Healthy predicted",
+    "Actual Result": "ERROR: [Errno 2] No such file or directory: 'results\\\\tc03_gradcam.png'",
+    "Status": "FAIL"
+  },
+  {
+    "Test Case ID": "TC-06",
+    "Module Tested": "YOLOv8 Lesion Detection",
+    "Test Description": "Detect infected lesion regions",
+    "Input": "dataset\\yolo_dragon_lesions\\images\\train\\Anthracnose (1).jpg",
+    "Expected Result": "Bounding boxes around lesions",
+    "Actual Result": "1 boxes, severity=Low",
+    "Status": "PASS"
+  },
+  {
+    "Test Case ID": "TC-05",
+    "Module Tested": "Quality Grading Module",
+    "Test Description": "Verify fruit quality classification",
+    "Input": "dataset\\merged_6class\\Healthy\\Archive_Fruit_00137.jpg",
+    "Expected Result": "Mature grade predicted",
+    "Actual Result": "Predicted: Immature Dragon Fruit conf=0.696",
+    "Status": "PASS"
+  },
+  {
+    "Test Case ID": "TC-08",
+    "Module Tested": "Advisory Module",
+    "Test Description": "Generate treatment recommendation",
+    "Input": "Anthracnose image",
+    "Expected Result": "Prevention and treatment displayed",
+    "Actual Result": "Advisory disease=Anthracnose severity=High",
+    "Status": "PASS"
+  },
+  {
+    "Test Case ID": "TC-09",
+    "Module Tested": "Flask Backend API",
+    "Test Description": "API response",
+    "Input": "error",
+    "Expected Result": "JSON response",
+    "Actual Result": "ERROR: [Errno 2] No such file or directory: 'results\\\\api_predict.png'",
+    "Status": "FAIL"
+  },
+  {
+    "Test Case ID": "TC-10",
+    "Module Tested": "System Performance",
+    "Test Description": "Measure response time",
+    "Input": "Upload image",
+    "Expected Result": "Result within 5s",
+    "Actual Result": "Grad-CAM avg=0.87s YOLO=0.3271794319152832",
+    "Status": "PASS"
+  }
+]

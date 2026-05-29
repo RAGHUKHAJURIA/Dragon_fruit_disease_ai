@@ -1,0 +1,18 @@
+{
+  "TC-03": {
+    "predicted": "Anthracnose",
+    "confidence": 0.9091966152191162,
+    "output": "results/tc03_gradcam.png"
+  },
+  "TC-04": {
+    "predicted": "Healthy",
+    "confidence": 0.9352878928184509,
+    "output": "results/tc04_gradcam.png"
+  },
+  "TC-09": {
+    "disease": "Anthracnose",
+    "confidence": 0.9091966152191162,
+    "advisory_snippet": "Anthracnose is the most common and economically significant disease of dragon fruit. Caused by Colletotrichum spp., it s",
+    "output": "results/api_predict.png"
+  }
+}
