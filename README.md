@@ -1,3 +1,13 @@
+---
+title: Dragon Fruit Disease Ai
+emoji: 👁
+colorFrom: gray
+colorTo: yellow
+sdk: docker
+pinned: false
+short_description: This is the ai model used in disease detection
+---
+
 # Dragon Fruit Disease AI
 
 AI-powered toolkit for dragon-fruit image analysis: disease classification, lesion detection, quality grading, VQA, explainability, and a Flask web UI.
