@@ -38,3 +38,6 @@ Thumbs.db
 
 # IDE / Gemini
 .gemini/
+
+# Model feature caches
+models/vqa_feat_cache/
