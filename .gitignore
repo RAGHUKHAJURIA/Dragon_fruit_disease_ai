@@ -41,3 +41,7 @@ Thumbs.db
 
 # Model feature caches
 models/vqa_feat_cache/
+
+runs/
+dataset/
+dataset_image_inventory.csv
